@@ -8,7 +8,8 @@ public class SM83
     public static Dictionary<byte, Action> PrefixInstructionMap = new Dictionary<byte, Action>
     {
         {0x11, RL_C},
-        {0x7C, BIT_7_H}
+        {0x7C, BIT_7_H},
+        {0x37, SWAP_A}
     };
  
     public static Dictionary<byte, Action> InstructionMap = new Dictionary<byte, Action>
@@ -84,7 +85,8 @@ public class SM83
         {0x16, LD_D_n8},
         {0xBE, CPA_HL},
         {0x7D, LD_A_L},
-        {0x86, ADD_A_HL}
+        {0x86, ADD_A_HL},
+        {0xE6, AND_A_n8}
     }; 
     
     public static MemoryBus MemoryBus;
@@ -97,12 +99,24 @@ public class SM83
     public static int WaitingForMasterInterruptChange = -1;
     public static bool NewMasterInterrupt = false;
 
+    public static List<string> Callstack = [];
+
+    public static byte IE
+    {
+        get => MemoryBus.ReadByte(0xFFFF);
+        set => MemoryBus.WriteByte(0xFFFF, value);
+    }
+
+    public static byte IF
+    {
+        get => MemoryBus.ReadByte(0xFF0F);
+        set => MemoryBus.WriteByte(0xFF0F, value);
+    }
+
     public static void HandleInterrupts()
     {
         if (!IME) return;
 
-        byte IE = MemoryBus.ReadByte(0xFFFF);
-        byte IF = MemoryBus.ReadByte(0xFF0F);
         byte pendingInterrupts = (byte)(IE & IF);
 
         if (pendingInterrupts == 0) return;
@@ -116,22 +130,21 @@ public class SM83
                 Stack.Push(ProgramCounter);
                 ProgramCounter = InterruptVectors[i];
 
-                IF = MemoryBus.ReadByte(0xFF0F);
                 IF &= (byte)~(1 << i);
-                MemoryBus.WriteByte(0xFF0F, IF);
                 break;
             }
         }
     }
 
-    public static void ExecuteNextInstruction()
+    public async static Task ExecuteNextInstruction()
     {
        byte opcode = MemoryBus.ReadByte(ProgramCounter++);
        if (InstructionMap.TryGetValue(opcode, out var instructionFunc))
        {
            int PCCallLoc = ProgramCounter - 1;
            instructionFunc();
-           AsyncLogger.Log($"(0x{(PCCallLoc):X8}) Executed Instruction 0x{opcode:X2} ({instructionFunc.Method.Name})");
+           //AsyncLogger.asyncLogger.Log($"(0x{(PCCallLoc):X8}) Executed Instruction 0x{opcode:X2} ({instructionFunc.Method.Name})");
+           Callstack.Add($"(0x{(PCCallLoc):X8}) Executed Instruction 0x{opcode:X2} ({instructionFunc.Method.Name})");
            
            if (WaitingForMasterInterruptChange > 0)
            {
@@ -140,31 +153,38 @@ public class SM83
            else if (WaitingForMasterInterruptChange == 0)
            {
                IME = NewMasterInterrupt;
-               AsyncLogger.Log($"Interrupts {(IME ? "Enabled" : "Disabled")}");
+               AsyncLogger.asyncLogger.Log($"Interrupts {(IME ? "Enabled" : "Disabled")}");
                WaitingForMasterInterruptChange--;
            }
        }
        else
        {
-           AsyncLogger.Log("=== CPU DUMP ===");
+           Console.WriteLine("=== CPU DUMP ===");
 
            // Print registers
-           AsyncLogger.Log($"AF: 0x{Registers.AF:X4}  BC: 0x{Registers.BC:X4}  DE: 0x{Registers.DE:X4}  HL: 0x{Registers.HL:X4}");
-           AsyncLogger.Log($"SP: 0x{Stack.SP:X4}  PC: 0x{ProgramCounter - 1:X4}");
+           Console.WriteLine($"AF: 0x{Registers.AF:X4}  BC: 0x{Registers.BC:X4}  DE: 0x{Registers.DE:X4}  HL: 0x{Registers.HL:X4}");
+           Console.WriteLine($"SP: 0x{Stack.SP:X4}  PC: 0x{ProgramCounter - 1:X4}");
 
            // Get current opcode
-           AsyncLogger.Log($"Opcode at PC: 0x{opcode:X2}");
+           Console.WriteLine($"Opcode at PC: 0x{opcode:X2}");
 
            // Print stack dump (next 8 bytes)
-           AsyncLogger.Log("\nStack Dump:");
+           Console.WriteLine("\nStack Dump:");
            for (int i = -1; i < 8; i++)
            {
                ushort addr = (ushort)(Stack.SP - i);
                byte value = MemoryBus.ReadByte(addr);
-               AsyncLogger.Log($"0x{addr:X4} ({(addr == Stack.SP ? "SP" : "SP - " + i)}): 0x{value:X2}");
+               Console.WriteLine($"0x{addr:X4} ({(addr == Stack.SP ? "SP" : "SP - " + i)}): 0x{value:X2}");
+           }
+           
+           Console.WriteLine("\nCall Stack:");
+           for (int i = Callstack.Count - 6; i < Callstack.Count; i++)
+           {
+               string call = Callstack[i];
+               Console.WriteLine(call);
            }
 
-           AsyncLogger.Log("=================");
+           Console.WriteLine("=================");
            throw new NotImplementedException($"Opcode 0x{opcode:X2} not implemented");
        }
     }
@@ -190,6 +210,20 @@ public class SM83
         Cycles += 8;
     }
 
+    public static void SWAP_A()
+    {
+        byte hi = (byte)(Registers.A >> 4);
+        byte lo = (byte)(Registers.A & 0x0F);
+
+        Registers.A = (byte)((lo << 4) | hi);
+
+        if (Registers.A == 0) Registers.ZeroFlag = true;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Registers.CarryFlag = false;
+        Cycles += 8;
+    }
+
     public static void PREFIX()
     {
         byte prefixInstruction = ReadByte();
@@ -197,7 +231,7 @@ public class SM83
         if (PrefixInstructionMap.TryGetValue(prefixInstruction, out var instructionFunc))
         {
             instructionFunc();
-            AsyncLogger.Log($"Executed Prefix instruction {instructionFunc.Method.Name}");
+            AsyncLogger.asyncLogger.Log($"Executed Prefix instruction {instructionFunc.Method.Name}");
         }
         else
         {
@@ -224,6 +258,18 @@ public class SM83
         Registers.CarryFlag = false;
         Registers.HalfCarryFlag = true;
         Cycles += 4;
+    }
+
+    public static void AND_A_n8()
+    {
+        byte value = ReadByte();
+        byte regValue = Registers.A;
+        Registers.A = (byte)(value & regValue);
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Registers.CarryFlag = false;
+        Cycles += 8;
     }
 
     public static void ADD_A_HL()
@@ -381,7 +427,6 @@ public class SM83
         byte value = ReadByte();
         byte regValue = Registers.A;
         Registers.ZeroFlag = (regValue == value);
-        AsyncLogger.Log($"CPA ZeroFlag is {Registers.ZeroFlag} because value is {value} and A is {regValue}");
         Registers.SubtractFlag = true;
         Registers.HalfCarryFlag = ((regValue & 0xF) < (value & 0xF));
         Registers.CarryFlag = (regValue < value);
@@ -394,7 +439,6 @@ public class SM83
         byte value = MemoryBus.ReadByte(address);
         byte regValue = Registers.A;
         Registers.ZeroFlag = (regValue == value);
-        AsyncLogger.Log($"CPA_HL ZeroFlag is {Registers.ZeroFlag} because value is {value} and A is {regValue}");
         Registers.SubtractFlag = true;
         Registers.HalfCarryFlag = ((regValue & 0xF) < (value & 0xF));
         Registers.CarryFlag = (regValue < value);

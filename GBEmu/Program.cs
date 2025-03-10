@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using System.Diagnostics;
 using Raylib_cs;
 using System.Numerics;
 using SFML.Graphics;
@@ -19,9 +20,17 @@ public class Program
     private static Image frameImage;
     private static bool running = true;
     
+    public const int CPU_CYCLES_PER_FRAME = 70224;
+    private const double ClockSpeed = 4194304.0;
+
     public static void Main(string[] args)
     {
-        FileStream fileStream = new FileStream("rom-corrupt.gb", FileMode.Open);
+        MainAsync(args);
+    }
+    
+    public static async void MainAsync(string[] args)
+    {
+        FileStream fileStream = new FileStream("rom.gb", FileMode.Open);
         
         fileStream.Seek(0x147, SeekOrigin.Begin);
         byte[] cartTypeBuffer = new byte[1]; 
@@ -34,7 +43,7 @@ public class Program
         fileStream.Flush();
         fileStream.Close();
 
-        Cartridge cartridge = new Cartridge(File.ReadAllBytes("rom-corrupt.gb"), cartridgeType);
+        Cartridge cartridge = new Cartridge(File.ReadAllBytes("rom.gb"), cartridgeType);
         gpu = new GPU();
         InputController inputController = new InputController();
 
@@ -54,31 +63,37 @@ public class Program
         SM83.Registers.Reset();
         //SM83.ProgramCounter = 0x100;
         SM83.Stack = new Stack(memoryBus);
-
+        
         while (running)
         {
             window.DispatchEvents();
             SM83.Cycles = 0;
-            RunFrame();
+            await RunFrame();
         }
 
         window.Close();
     }
-    
-    public const int CPU_CYCLES_PER_FRAME = 70224;
 
-    public static void RunFrame()
+    public static async Task RunFrame()
     {
+        Stopwatch stopwatch = Stopwatch.StartNew();
         int cyclesThisFrame = 0;
 
         while (cyclesThisFrame < CPU_CYCLES_PER_FRAME)
         {
             int previousCycles = SM83.Cycles;
-            SM83.ExecuteNextInstruction();
+            await SM83.ExecuteNextInstruction();
             SM83.HandleInterrupts();
             int elapsedCycles = SM83.Cycles - previousCycles;
             gpu.Step(elapsedCycles);
             cyclesThisFrame += elapsedCycles;
+        }
+
+        double targetFrameTime = 1000.0 / 59.7;
+
+        while (stopwatch.Elapsed.TotalMilliseconds < targetFrameTime)
+        {
+            Thread.SpinWait(100);
         }
     }
 

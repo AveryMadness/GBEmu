@@ -16,9 +16,9 @@ public class Stack
         memory.WriteByte(--SP, (byte)(value >> 8));
         memory.WriteByte(--SP, (byte)(value & 0xFF));
         
-        Console.WriteLine($"After PUSH: SP = 0x{SP:X4}");
-        Console.WriteLine($"Stack at {SP:X4}: 0x{memory.ReadByte(SP):X2}");
-        Console.WriteLine($"Stack at {SP+1:X4}: 0x{memory.ReadByte((ushort)(SP+1)):X2}");
+        //Console.WriteLine($"After PUSH: SP = 0x{SP:X4}");
+        //Console.WriteLine($"Stack at {SP:X4}: 0x{memory.ReadByte(SP):X2}");
+        //Console.WriteLine($"Stack at {SP+1:X4}: 0x{memory.ReadByte((ushort)(SP+1)):X2}");
     }
     
     public ushort Pop()
