@@ -10,7 +10,10 @@ public class SM83
         {0x11, RL_C},
         {0x7C, BIT_7_H},
         {0x37, SWAP_A},
-        {0x87, RES_0_A}
+        {0x87, RES_0_A},
+        {0x27, SLA_A},
+        {0x7F, BIT_7_A},
+        {0x86, RES_0_VHL}
     };
  
     public static Dictionary<byte, Action> InstructionMap = new Dictionary<byte, Action>
@@ -105,7 +108,28 @@ public class SM83
         {0xCA, JP_Z},
         {0x7E, LD_A_HL},
         {0x35, DEC_VHL},
-        {0x2C, INC_L}
+        {0x2C, INC_L},
+        {0x09, ADD_HL_BC},
+        {0x4E, LD_C_HL},
+        {0x46, LD_B_HL},
+        {0x69, LD_L_C},
+        {0x60, LD_H_B},
+        {0x0A, LD_A_BC},
+        {0x85, ADD_A_L},
+        {0x6F, LD_L_A},
+        {0xC2, JP_NZ},
+        {0x3A, LD_A_HLDEC},
+        {0x7A, LD_A_D},
+        {0x73, LD_HL_E},
+        {0x72, LD_HL_D},
+        {0x71, LD_HL_C},
+        {0x2D, DEC_L},
+        {0xC6, ADD_A_n8},
+        {0x5D, LD_E_L},
+        {0x54, LD_D_H},
+        {0xF6, OR_A_n8},
+        {0x6B, LD_L_E},
+        {0x62, LD_H_D}
     }; 
     
     public static MemoryBus MemoryBus;
@@ -217,6 +241,16 @@ public class SM83
         Registers.HalfCarryFlag = true;
         Cycles += 8;
     }
+    
+    public static void BIT_7_A()
+    {
+        byte register = Registers.A;
+        bool bitSet = IsBitSet(register, 7);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
 
     public static void RL_C()
     {
@@ -250,6 +284,25 @@ public class SM83
         Registers.A = newValue;
         Cycles += 8;
     }
+    
+    public static void RES_0_VHL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        byte newValue = ResetBit(value, 0);
+        MemoryBus.WriteByte(address, newValue);
+        Cycles += 8;
+    }
+
+    public static void SLA_A()
+    {
+        Registers.CarryFlag = (Registers.A & 0x80) != 0;
+        Registers.A = (byte)(Registers.A << 1);
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
 
     public static void PREFIX()
     {
@@ -262,6 +315,32 @@ public class SM83
         }
         else
         {
+            Console.WriteLine("=== CPU DUMP ===");
+
+            // Print registers
+            Console.WriteLine($"AF: 0x{Registers.AF:X4}  BC: 0x{Registers.BC:X4}  DE: 0x{Registers.DE:X4}  HL: 0x{Registers.HL:X4}");
+            Console.WriteLine($"SP: 0x{Stack.SP:X4}  PC: 0x{ProgramCounter - 1:X4}");
+
+            // Get current opcode
+            Console.WriteLine($"Opcode at PC: 0x{0xCB:X2}");
+
+            // Print stack dump (next 8 bytes)
+            Console.WriteLine("\nStack Dump:");
+            for (int i = -1; i < 8; i++)
+            {
+                ushort addr = (ushort)(Stack.SP - i);
+                byte value = MemoryBus.ReadByte(addr);
+                Console.WriteLine($"0x{addr:X4} ({(addr == Stack.SP ? "SP" : "SP - " + i)}): 0x{value:X2}");
+            }
+           
+            Console.WriteLine("\nCall Stack:");
+            for (int i = Callstack.Count - 6; i < Callstack.Count; i++)
+            {
+                string call = Callstack[i];
+                Console.WriteLine(call);
+            }
+
+            Console.WriteLine("=================");
             throw new NotImplementedException($"PREFIX Opcode 0x{prefixInstruction:X2} not implemented");
         }
 
@@ -285,6 +364,18 @@ public class SM83
         Registers.SubtractFlag = false;
 
         Registers.A = (byte)(Registers.A | Registers.B);
+        Registers.ZeroFlag = Registers.A == 0;
+        Cycles += 4;
+    }
+    
+    public static void OR_A_n8()
+    {
+        byte value = ReadByte();
+        Registers.CarryFlag = false;
+        Registers.HalfCarryFlag = false;
+        Registers.SubtractFlag = false;
+
+        Registers.A = (byte)(Registers.A | value);
         Registers.ZeroFlag = Registers.A == 0;
         Cycles += 4;
     }
@@ -333,6 +424,30 @@ public class SM83
         Cycles += 8;
     }
 
+    public static void ADD_A_n8()
+    {
+        byte value = ReadByte();
+        byte oldA = Registers.A;
+        Registers.A += value;
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = CheckHalfCarry_Add8(oldA, value);
+        Registers.CarryFlag = ((oldA + value) & 0x100) != 0;
+        Cycles += 8;
+    }
+    
+    public static void ADD_HL_BC()
+    {
+        ushort value = Registers.BC;
+        ushort oldA = Registers.HL;
+        Registers.HL += value;
+        Registers.ZeroFlag = Registers.HL == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = CheckHalfCarry_Add16(oldA, value);
+        Registers.CarryFlag = ((oldA + value) & 0x10000) != 0;
+        Cycles += 8;
+    }
+
     public static void ADD_HL_DE()
     {
         ushort value = Registers.DE;
@@ -347,6 +462,18 @@ public class SM83
     public static void ADD_A_A()
     {
         byte value = Registers.A;
+        byte oldA = Registers.A;
+        Registers.A += value;
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = CheckHalfCarry_Add8(oldA, value);
+        Registers.CarryFlag = ((oldA + value) & 0x100) != 0;
+        Cycles += 4;
+    }
+    
+    public static void ADD_A_L()
+    {
+        byte value = Registers.L;
         byte oldA = Registers.A;
         Registers.A += value;
         Registers.ZeroFlag = Registers.A == 0;
@@ -545,6 +672,21 @@ public class SM83
         }
     }
     
+    public static void JP_NZ()
+    {
+        ushort address = ReadWord();
+
+        if (!Registers.ZeroFlag)
+        {
+            ProgramCounter = address;
+            Cycles += 16;
+        }
+        else
+        {
+            Cycles += 12;
+        }
+    }
+    
     public static void JP_HL()
     {
         ushort address = Registers.HL;
@@ -639,6 +781,16 @@ public class SM83
 
         Cycles += 8;
     }
+    
+    public static void LD_A_HLDEC()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        Registers.A = value;
+        Registers.HL--;
+
+        Cycles += 8;
+    }
 
     public static void LDA_HLINC()
     {
@@ -696,6 +848,18 @@ public class SM83
         Cycles += 4;
     }
     
+    public static void LD_E_L()
+    {
+        Registers.E = Registers.L;
+        Cycles += 4;
+    }
+    
+    public static void LD_D_H()
+    {
+        Registers.D = Registers.H;
+        Cycles += 4;
+    }
+    
     public static void LD_E_HL()
     {
         ushort address = Registers.HL;
@@ -732,6 +896,39 @@ public class SM83
         Cycles += 4;
     }
     
+    public static void LD_H_D()
+    {
+        Registers.H = Registers.D;
+        Cycles += 4;
+    }
+    
+    public static void LD_H_B()
+    {
+        Registers.H = Registers.B;
+        Cycles += 4;
+    }
+
+    public static void LD_HL_E()
+    {
+        ushort address = Registers.HL;
+        MemoryBus.WriteByte(address, Registers.E);
+        Cycles += 8;
+    }
+    
+    public static void LD_HL_D()
+    {
+        ushort address = Registers.HL;
+        MemoryBus.WriteByte(address, Registers.D);
+        Cycles += 8;
+    }
+    
+    public static void LD_HL_C()
+    {
+        ushort address = Registers.HL;
+        MemoryBus.WriteByte(address, Registers.C);
+        Cycles += 8;
+    }
+    
     public static void LD_B_A()
     {
         Registers.B = Registers.A;
@@ -741,6 +938,12 @@ public class SM83
     public static void LD_D_A()
     {
         Registers.D = Registers.A;
+        Cycles += 4;
+    }
+    
+    public static void LD_L_A()
+    {
+        Registers.L = Registers.A;
         Cycles += 4;
     }
     
@@ -792,6 +995,24 @@ public class SM83
         Cycles += 4;
     }
     
+    public static void LD_A_D()
+    {
+        Registers.A = Registers.D;
+        Cycles += 4;
+    }
+    
+    public static void LD_L_C()
+    {
+        Registers.L = Registers.C;
+        Cycles += 4;
+    }
+    
+    public static void LD_L_E()
+    {
+        Registers.L = Registers.E;
+        Cycles += 4;
+    }
+    
     public static void LD_A_L()
     {
         Registers.A = Registers.L;
@@ -827,6 +1048,27 @@ public class SM83
     {
         byte value = MemoryBus.ReadByte(Registers.HL);
         Registers.A = value;
+        Cycles += 8;
+    }
+    
+    public static void LD_A_BC()
+    {
+        byte value = MemoryBus.ReadByte(Registers.BC);
+        Registers.A = value;
+        Cycles += 8;
+    }
+    
+    public static void LD_B_HL()
+    {
+        byte value = MemoryBus.ReadByte(Registers.HL);
+        Registers.B = value;
+        Cycles += 8;
+    }
+    
+    public static void LD_C_HL()
+    {
+        byte value = MemoryBus.ReadByte(Registers.HL);
+        Registers.C = value;
         Cycles += 8;
     }
     
@@ -997,6 +1239,18 @@ public class SM83
         value -= 1;
         Registers.A = value;
         Registers.ZeroFlag = Registers.A == 0;
+        Registers.HalfCarryFlag = halfCarry;
+        Registers.SubtractFlag = true;
+        Cycles += 4;
+    }
+    
+    public static void DEC_L()
+    {
+        byte value = Registers.L;
+        bool halfCarry = CheckHalfCarry_Sub8(value, 1);
+        value -= 1;
+        Registers.L = value;
+        Registers.ZeroFlag = Registers.L == 0;
         Registers.HalfCarryFlag = halfCarry;
         Registers.SubtractFlag = true;
         Cycles += 4;
