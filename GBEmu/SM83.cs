@@ -129,7 +129,9 @@ public class SM83
         {0x54, LD_D_H},
         {0xF6, OR_A_n8},
         {0x6B, LD_L_E},
-        {0x62, LD_H_D}
+        {0x62, LD_H_D},
+        {0x40, LD_B_B},
+        {0x76, HALT}
     }; 
     
     public static MemoryBus MemoryBus;
@@ -141,6 +143,7 @@ public class SM83
     public static ushort[] InterruptVectors = { 0x40, 0x48, 0x50, 0x58, 0x60 };
     public static int WaitingForMasterInterruptChange = -1;
     public static bool NewMasterInterrupt = false;
+    public static bool IsHalted = false;
 
     public static List<string> Callstack = [];
 
@@ -164,6 +167,8 @@ public class SM83
 
         if (pendingInterrupts == 0) return;
 
+        IsHalted = false;
+
         IME = false;
 
         for (int i = 0; i < 5; i++)
@@ -180,7 +185,8 @@ public class SM83
     }
 
     public async static Task ExecuteNextInstruction()
-    {
+    { 
+        if (IsHalted) return;
        byte opcode = MemoryBus.ReadByte(ProgramCounter++);
        if (InstructionMap.TryGetValue(opcode, out var instructionFunc))
        {
@@ -342,6 +348,12 @@ public class SM83
             throw new NotImplementedException($"PREFIX Opcode 0x{prefixInstruction:X2} not implemented");
         }
 
+        Cycles += 4;
+    }
+
+    public static void HALT()
+    {
+        IsHalted = true;
         Cycles += 4;
     }
 
@@ -928,6 +940,12 @@ public class SM83
     }
     
     public static void LD_B_A()
+    {
+        Registers.B = Registers.A;
+        Cycles += 4;
+    }
+    
+    public static void LD_B_B()
     {
         Registers.B = Registers.A;
         Cycles += 4;

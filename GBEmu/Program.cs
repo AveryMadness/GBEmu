@@ -3,6 +3,7 @@
 using System.Diagnostics;
 using System.Numerics;
 using SFML.Graphics;
+using SFML.System;
 using SFML.Window;
 using Image = SFML.Graphics.Image;
 
@@ -53,13 +54,98 @@ public class Program
         window = new RenderWindow(new VideoMode(160, 144), "GBEmu");
         window.Closed += (sender, e) => running = false;
 
+        window.KeyPressed += (sender, e) =>
+        {
+            if (e.Code == Keyboard.Key.Z)
+            {
+                inputController.PressButton(GameBoyButton.A);
+            }
+            
+            if (e.Code == Keyboard.Key.X)
+            {
+                inputController.PressButton(GameBoyButton.B);
+            }
+
+            if (e.Code == Keyboard.Key.Enter)
+            {
+                inputController.PressButton(GameBoyButton.Start);
+            }
+            
+            if (e.Code == Keyboard.Key.RShift)
+            {
+                inputController.PressButton(GameBoyButton.Select);
+            }
+            
+            if (e.Code == Keyboard.Key.Up)
+            {
+                inputController.PressButton(GameBoyButton.Up);
+            }
+            
+            if (e.Code == Keyboard.Key.Down)
+            {
+                inputController.PressButton(GameBoyButton.Down);
+            }
+            
+            if (e.Code == Keyboard.Key.Left)
+            {
+                inputController.PressButton(GameBoyButton.Left);
+            }
+            
+            if (e.Code == Keyboard.Key.Right)
+            {
+                inputController.PressButton(GameBoyButton.Right);
+            }
+        };
+        
+        window.KeyReleased += (sender, e) =>
+        {
+            if (e.Code == Keyboard.Key.Z)
+            {
+                inputController.ReleaseButton(GameBoyButton.A);
+            }
+            
+            if (e.Code == Keyboard.Key.X)
+            {
+                inputController.ReleaseButton(GameBoyButton.B);
+            }
+
+            if (e.Code == Keyboard.Key.Enter)
+            {
+                inputController.ReleaseButton(GameBoyButton.Start);
+            }
+            
+            if (e.Code == Keyboard.Key.RShift)
+            {
+                inputController.ReleaseButton(GameBoyButton.Select);
+            }
+            
+            if (e.Code == Keyboard.Key.Up)
+            {
+                inputController.ReleaseButton(GameBoyButton.Up);
+            }
+            
+            if (e.Code == Keyboard.Key.Down)
+            {
+                inputController.ReleaseButton(GameBoyButton.Down);
+            }
+            
+            if (e.Code == Keyboard.Key.Left)
+            {
+                inputController.ReleaseButton(GameBoyButton.Left);
+            }
+            
+            if (e.Code == Keyboard.Key.Right)
+            {
+                inputController.ReleaseButton(GameBoyButton.Right);
+            }
+        };
+
         frameImage = new Image((uint)160, (uint)144, SFML.Graphics.Color.White);
         texture = new Texture(160, 144);
         sprite = new Sprite(texture);
 
         SM83.MemoryBus = memoryBus;
         SM83.Registers.Reset();
-        //SM83.ProgramCounter = 0x100;
         SM83.Stack = new Stack(memoryBus);
         
         while (running)
@@ -76,7 +162,7 @@ public class Program
     {
         Stopwatch stopwatch = Stopwatch.StartNew();
         int cyclesThisFrame = 0;
-
+        
         while (cyclesThisFrame < CPU_CYCLES_PER_FRAME)
         {
             int previousCycles = SM83.Cycles;

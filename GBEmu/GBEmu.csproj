@@ -9,7 +9,7 @@
 
     <ItemGroup>
       <None Update="rom.gb">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
       <None Update="dmg_boot.bin">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
