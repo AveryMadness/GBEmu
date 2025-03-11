@@ -9,7 +9,8 @@ public class SM83
     {
         {0x11, RL_C},
         {0x7C, BIT_7_H},
-        {0x37, SWAP_A}
+        {0x37, SWAP_A},
+        {0x87, RES_0_A}
     };
  
     public static Dictionary<byte, Action> InstructionMap = new Dictionary<byte, Action>
@@ -86,7 +87,25 @@ public class SM83
         {0xBE, CPA_HL},
         {0x7D, LD_A_L},
         {0x86, ADD_A_HL},
-        {0xE6, AND_A_n8}
+        {0xE6, AND_A_n8},
+        {0x47, LD_B_A},
+        {0xB0, OR_A_B},
+        {0xA9, XORA_C},
+        {0xA1, AND_A_C},
+        {0x79, LD_A_C},
+        {0xEF, RST_28},
+        {0x87, ADD_A_A},
+        {0x5F, LD_E_A},
+        {0x19, ADD_HL_DE},
+        {0x5E, LD_E_HL},
+        {0x56, LD_D_HL},
+        {0xE9, JP_HL},
+        {0x12, LD_DE_A},
+        {0x1C, INC_E},
+        {0xCA, JP_Z},
+        {0x7E, LD_A_HL},
+        {0x35, DEC_VHL},
+        {0x2C, INC_L}
     }; 
     
     public static MemoryBus MemoryBus;
@@ -224,6 +243,14 @@ public class SM83
         Cycles += 8;
     }
 
+    public static void RES_0_A()
+    {
+        byte value = Registers.A;
+        byte newValue = ResetBit(value, 0);
+        Registers.A = newValue;
+        Cycles += 8;
+    }
+
     public static void PREFIX()
     {
         byte prefixInstruction = ReadByte();
@@ -250,9 +277,30 @@ public class SM83
         Registers.ZeroFlag = false;
         Cycles += 4;
     }
+    
+    public static void OR_A_B()
+    {
+        Registers.CarryFlag = false;
+        Registers.HalfCarryFlag = false;
+        Registers.SubtractFlag = false;
+
+        Registers.A = (byte)(Registers.A | Registers.B);
+        Registers.ZeroFlag = Registers.A == 0;
+        Cycles += 4;
+    }
 
     public static void AND_A()
     {
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = false;
+        Registers.CarryFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 4;
+    }
+    
+    public static void AND_A_C()
+    {
+        Registers.A = (byte)(Registers.A & Registers.C);
         Registers.ZeroFlag = Registers.A == 0;
         Registers.SubtractFlag = false;
         Registers.CarryFlag = false;
@@ -283,6 +331,29 @@ public class SM83
         Registers.HalfCarryFlag = CheckHalfCarry_Add8(oldA, value);
         Registers.CarryFlag = ((oldA + value) & 0x100) != 0;
         Cycles += 8;
+    }
+
+    public static void ADD_HL_DE()
+    {
+        ushort value = Registers.DE;
+        ushort oldHL = Registers.HL;
+        Registers.HL += value;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = CheckHalfCarry_Add16(oldHL, value);
+        Registers.CarryFlag = ((oldHL + value) & 0x10000) != 0;
+        Cycles += 8;
+    }
+    
+    public static void ADD_A_A()
+    {
+        byte value = Registers.A;
+        byte oldA = Registers.A;
+        Registers.A += value;
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = CheckHalfCarry_Add8(oldA, value);
+        Registers.CarryFlag = ((oldA + value) & 0x100) != 0;
+        Cycles += 4;
     }
 
     public static void SUB_A_B()
@@ -351,6 +422,13 @@ public class SM83
         Stack.Push(ProgramCounter);
         ProgramCounter = address;
         Cycles += 24;
+    }
+
+    public static void RST_28()
+    {
+        Stack.Push(ProgramCounter);
+        ProgramCounter = 0x0028;
+        Cycles += 16;
     }
 
     public static void RETZ()
@@ -452,6 +530,28 @@ public class SM83
         Cycles += 16;
     }
 
+    public static void JP_Z()
+    {
+        ushort address = ReadWord();
+
+        if (Registers.ZeroFlag)
+        {
+            ProgramCounter = address;
+            Cycles += 16;
+        }
+        else
+        {
+            Cycles += 12;
+        }
+    }
+    
+    public static void JP_HL()
+    {
+        ushort address = Registers.HL;
+        ProgramCounter = address;
+        Cycles += 4;
+    }
+
     public static void JR_Z_e8()
     {
         sbyte offset = (sbyte)ReadByte();
@@ -492,6 +592,16 @@ public class SM83
     {
         Registers.A = 0; // Since A ^ A is always 0
         Registers.ZeroFlag = true;
+        Registers.SubtractFlag = false;
+        Registers.CarryFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 4;
+    }
+    
+    public static void XORA_C()
+    {
+        Registers.A = (byte)(Registers.A ^ Registers.C); // Since A ^ A is always 0
+        Registers.ZeroFlag = Registers.A == 0;
         Registers.SubtractFlag = false;
         Registers.CarryFlag = false;
         Registers.HalfCarryFlag = false;
@@ -580,6 +690,28 @@ public class SM83
         Cycles += 8;
     }
     
+    public static void LD_E_A()
+    {
+        Registers.E = Registers.A;
+        Cycles += 4;
+    }
+    
+    public static void LD_E_HL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        Registers.E = value;
+        Cycles += 8;
+    }
+    
+    public static void LD_D_HL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        Registers.D = value;
+        Cycles += 8;
+    }
+    
     public static void LD_D_n8()
     {
         byte value = ReadByte();
@@ -597,6 +729,12 @@ public class SM83
     public static void LD_H_A()
     {
         Registers.H = Registers.A;
+        Cycles += 4;
+    }
+    
+    public static void LD_B_A()
+    {
+        Registers.B = Registers.A;
         Cycles += 4;
     }
     
@@ -620,6 +758,14 @@ public class SM83
         Cycles += 12;
     }
     
+    public static void LD_DE_A()
+    {
+        ushort address = Registers.DE;
+        byte value = Registers.A;
+        MemoryBus.WriteByte(address, value);
+        Cycles += 8;
+    }
+    
     public static void LD_B()
     {
         byte value = ReadByte();
@@ -637,6 +783,12 @@ public class SM83
     public static void LD_A_B()
     {
         Registers.A = Registers.B;
+        Cycles += 4;
+    }
+    
+    public static void LD_A_C()
+    {
+        Registers.A = Registers.C;
         Cycles += 4;
     }
     
@@ -667,6 +819,13 @@ public class SM83
     public static void LD_A_DE()
     {
         byte value = MemoryBus.ReadByte(Registers.DE);
+        Registers.A = value;
+        Cycles += 8;
+    }
+
+    public static void LD_A_HL()
+    {
+        byte value = MemoryBus.ReadByte(Registers.HL);
         Registers.A = value;
         Cycles += 8;
     }
@@ -706,6 +865,26 @@ public class SM83
         bool halfCarry = CheckHalfCarry_Add16(Registers.HL, 1);
         Registers.HL++;
         Registers.ZeroFlag = Registers.HL == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = halfCarry;
+        Cycles += 12;
+    }
+    
+    public static void INC_E()
+    {
+        bool halfCarry = CheckHalfCarry_Add16(Registers.E, 1);
+        Registers.E++;
+        Registers.ZeroFlag = Registers.E == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = halfCarry;
+        Cycles += 12;
+    }
+    
+    public static void INC_L()
+    {
+        bool halfCarry = CheckHalfCarry_Add16(Registers.L, 1);
+        Registers.L++;
+        Registers.ZeroFlag = Registers.L == 0;
         Registers.SubtractFlag = false;
         Registers.HalfCarryFlag = halfCarry;
         Cycles += 12;
@@ -796,6 +975,19 @@ public class SM83
     {
         Registers.BC--;
         Cycles += 8;
+    }
+
+    public static void DEC_VHL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        bool halfCarry = CheckHalfCarry_Sub8(value, 1);
+        Registers.SubtractFlag = true;
+        Registers.HalfCarryFlag = halfCarry;
+        value--;
+        Registers.ZeroFlag = value == 0;
+        MemoryBus.WriteByte(address, value);
+        Cycles += 12;
     }
     
     public static void DEC_A()
@@ -905,6 +1097,11 @@ public class SM83
     public static bool IsBitSet(byte b, int pos)
     {
         return (b & (1 << pos)) != 0;
+    }
+
+    public static byte ResetBit(byte value, int bit)
+    {
+        return (byte)(value & ~(1 << bit));
     }
 
 }
