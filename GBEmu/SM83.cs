@@ -196,7 +196,6 @@ public class SM83
            else if (WaitingForMasterInterruptChange == 0)
            {
                IME = NewMasterInterrupt;
-               AsyncLogger.asyncLogger.Log($"Interrupts {(IME ? "Enabled" : "Disabled")}");
                WaitingForMasterInterruptChange--;
            }
        }
@@ -311,7 +310,6 @@ public class SM83
         if (PrefixInstructionMap.TryGetValue(prefixInstruction, out var instructionFunc))
         {
             instructionFunc();
-            AsyncLogger.asyncLogger.Log($"Executed Prefix instruction {instructionFunc.Method.Name}");
         }
         else
         {

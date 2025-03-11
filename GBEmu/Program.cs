@@ -1,11 +1,9 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System.Diagnostics;
-using Raylib_cs;
 using System.Numerics;
 using SFML.Graphics;
 using SFML.Window;
-using Color = Raylib_cs.Color;
 using Image = SFML.Graphics.Image;
 
 namespace GBEmu;
