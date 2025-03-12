@@ -22,6 +22,8 @@ public class Program
     public const int CPU_CYCLES_PER_FRAME = 70224;
     private const double ClockSpeed = 4194304.0;
 
+    public const bool UseGameboyDoctor = true;
+
     public static void Main(string[] args)
     {
         MainAsync(args);
@@ -147,6 +149,11 @@ public class Program
         SM83.MemoryBus = memoryBus;
         SM83.Registers.Reset();
         SM83.Stack = new Stack(memoryBus);
+
+        if (UseGameboyDoctor)
+        {
+            GameboyDoctor.SetupRegisters();
+        }
         
         while (running)
         {

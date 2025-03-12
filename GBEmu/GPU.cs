@@ -478,7 +478,7 @@ public class GPU
             case 0xFF41: return stat;
             case 0xFF42: return scy;
             case 0xFF43: return scx;
-            case 0xFF44: return ly;
+            case 0xFF44: return 0x90;
             case 0xFF45: return lyc;
             case 0xFF47: return bgp;
             case 0xFF48: return obp0;

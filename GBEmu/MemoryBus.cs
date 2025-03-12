@@ -7,7 +7,7 @@ public class MemoryBus
     private byte[] bootRom;
     private GPU gpu;
     private InputController input;
-    private bool useBootRom = true;
+    public bool useBootRom = true;
 
     public MemoryBus(byte[] bootRom, Cartridge cart, GPU gpu, InputController input)
     {
