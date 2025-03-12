@@ -20,7 +20,6 @@ public class Program
     private static bool running = true;
     
     public const int CPU_CYCLES_PER_FRAME = 70224;
-    private const double ClockSpeed = 4194304.0;
 
     public const bool UseGameboyDoctor = false;
     public const bool SkipBoot = true;

@@ -172,7 +172,9 @@ public class SM83
         {0x3B, DEC_SP},
         {0x39, ADD_HL_SP},
         {0xE8, ADD_SP_r8},
-        {0xF8, LD_HL_SP_P_r8}
+        {0xF8, LD_HL_SP_P_r8},
+        {0x38, JR_C_e8},
+        {0xDE, SBC_A_n8}
     }; 
     
     public static MemoryBus MemoryBus;
@@ -676,13 +678,15 @@ public class SM83
 
     public static void ADC_A_n8()
     {
-        byte value = (byte)(ReadByte() + (Registers.CarryFlag ? 1 : 0));
+        byte value = ReadByte();
+        int carry = Registers.CarryFlag ? 1 : 0;
         byte oldA = Registers.A;
-        Registers.A += value;
+        int result = Registers.A + value + carry;
+        Registers.A = (byte)result;
         Registers.ZeroFlag = Registers.A == 0;
         Registers.SubtractFlag = false;
-        Registers.HalfCarryFlag = CheckHalfCarry_Add8(oldA, value);
-        Registers.CarryFlag = ((oldA + value) & 0x100) != 0;
+        Registers.HalfCarryFlag = ((oldA & 0x0F) + (value & 0x0F) + carry) > 0x0F;
+        Registers.CarryFlag = (oldA + value + carry) > 0xFF;
         Cycles += 8;
     }
 
@@ -790,6 +794,22 @@ public class SM83
         Registers.HalfCarryFlag = CheckHalfCarry_Add8(oldA, value);
         Registers.CarryFlag = ((oldA + value) & 0x100) != 0;
         Cycles += 4;
+    }
+
+    public static void SBC_A_n8()
+    {
+        byte value = ReadByte();
+        int carry = Registers.CarryFlag ? 1 : 0;
+
+        int result = Registers.A - value - carry;
+
+        Registers.ZeroFlag = ((byte)result) == 0;
+        Registers.SubtractFlag = true;
+        Registers.HalfCarryFlag = ((Registers.A & 0x0F) - (value & 0x0F) - carry) < 0;
+        Registers.CarryFlag = result < 0;
+
+        Registers.A = (byte)result;
+        Cycles += 8;
     }
 
     public static void SUB_d8()
@@ -1185,6 +1205,20 @@ public class SM83
         if (Registers.ZeroFlag)
         {
             ProgramCounter += (ushort)offset;
+            Cycles += 12;
+        }
+        else
+        {
+            Cycles += 8;
+        }
+    }
+
+    public static void JR_C_e8()
+    {
+        sbyte offset = (sbyte)ReadByte();
+        if (Registers.CarryFlag)
+        {
+            ProgramCounter = (ushort)(ProgramCounter + offset);
             Cycles += 12;
         }
         else
