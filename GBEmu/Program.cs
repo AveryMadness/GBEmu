@@ -22,7 +22,8 @@ public class Program
     public const int CPU_CYCLES_PER_FRAME = 70224;
     private const double ClockSpeed = 4194304.0;
 
-    public const bool UseGameboyDoctor = true;
+    public const bool UseGameboyDoctor = false;
+    public const bool SkipBoot = true;
 
     public static void Main(string[] args)
     {
@@ -154,6 +155,11 @@ public class Program
         {
             GameboyDoctor.SetupRegisters();
         }
+        else if (SkipBoot)
+        {
+            SM83.MemoryBus.useBootRom = false;
+            SM83.ProgramCounter = 0x100;
+        }
         
         while (running)
         {
@@ -173,8 +179,23 @@ public class Program
         while (cyclesThisFrame < CPU_CYCLES_PER_FRAME)
         {
             int previousCycles = SM83.Cycles;
-            SM83.HandleInterrupts();
-            await SM83.ExecuteNextInstruction();
+            if (SM83.IsHalted)
+            {
+                if ((SM83.IF & SM83.IE) != 0 || SM83.IF != 0)
+                {
+                    SM83.IsHalted = false;
+                }
+                else
+                {
+                    SM83.Cycles += 4;
+                }
+            }
+            else
+            {
+                await SM83.ExecuteNextInstruction();
+                SM83.HandleInterrupts();
+            }
+            
             int elapsedCycles = SM83.Cycles - previousCycles;
             gpu.Step(elapsedCycles);
             cyclesThisFrame += elapsedCycles;

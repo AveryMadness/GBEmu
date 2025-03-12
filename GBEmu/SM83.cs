@@ -168,7 +168,11 @@ public class SM83
         {0x08, LDa16_SP},
         {0x66, LD_H_vHL},
         {0x33, INC_SP},
-        {0xAD, XOR_A_L}
+        {0xAD, XOR_A_L},
+        {0x3B, DEC_SP},
+        {0x39, ADD_HL_SP},
+        {0xE8, ADD_SP_r8},
+        {0xF8, LD_HL_SP_P_r8}
     }; 
     
     public static MemoryBus MemoryBus;
@@ -191,45 +195,79 @@ public class SM83
         set => MemoryBus.WriteByte(0xFFFF, value);
     }
 
+    [Flags]
+    public enum InterruptFlags : byte
+    {
+        VBlank = 0x01,
+        LCDStat = 0x02,
+        Timer = 0x04,
+        Serial = 0x08,
+        Joypad = 0x10
+    }
+
     public static byte IF
     {
         get => MemoryBus.ReadByte(0xFF0F);
         set => MemoryBus.WriteByte(0xFF0F, value);
     }
 
+    public static void RequestInterrupt(InterruptFlags flag)
+    {
+        IF |= (byte)flag;
+    }
+
+    public static void ClearInterrupt(InterruptFlags flag)
+    {
+        IF &= (byte)~flag;
+    }
+
     public static void HandleInterrupts()
     {
         if (!IME) return;
 
-        byte pendingInterrupts = (byte)(IE & IF);
+        byte pendingInterrupts = (byte)(IF & IE);
 
-        if (pendingInterrupts == 0) return;
-
-        IsHalted = false;
+        if (pendingInterrupts == 0)
+            return;
 
         IME = false;
 
-        for (int i = 0; i < 5; i++)
+        if ((pendingInterrupts & (byte)InterruptFlags.VBlank) != 0)
         {
-            if ((pendingInterrupts & (1 << i)) != 0)
-            {
-                Stack.Push(ProgramCounter);
-                ProgramCounter = InterruptVectors[i];
-
-                IF &= (byte)~(1 << i);
-                break;
-            }
+            ClearInterrupt(InterruptFlags.VBlank);
+            CallInterruptHandler(0x0040);
         }
+        else if ((pendingInterrupts & (byte)InterruptFlags.LCDStat) != 0)
+        {
+            ClearInterrupt(InterruptFlags.LCDStat);
+            CallInterruptHandler(0x0048);
+        }
+        else if ((pendingInterrupts & (byte)InterruptFlags.Timer) != 0)
+        {
+            ClearInterrupt(InterruptFlags.Timer);
+            CallInterruptHandler(0x0050);
+        }
+        else if ((pendingInterrupts & (byte)InterruptFlags.Serial) != 0)
+        {
+            ClearInterrupt(InterruptFlags.Serial);
+            CallInterruptHandler(0x0058);
+        }
+        else if ((pendingInterrupts & (byte)InterruptFlags.Joypad) != 0)
+        {
+            ClearInterrupt(InterruptFlags.Joypad);
+            CallInterruptHandler(0x0060);
+        }
+    }
+
+    public static void CallInterruptHandler(ushort address)
+    {
+        Stack.Push(ProgramCounter);
+        ProgramCounter = address;
+        Cycles += 20;
     }
 
     public static async Task ExecuteNextInstruction()
     { 
-        if (IsHalted)
-        {
-            Cycles += 4;
-            return; 
-        }
-        
         if (Program.UseGameboyDoctor)
         {
             byte first = SM83.MemoryBus.ReadByte((ushort)(ProgramCounter));
@@ -645,6 +683,42 @@ public class SM83
         Registers.SubtractFlag = false;
         Registers.HalfCarryFlag = CheckHalfCarry_Add8(oldA, value);
         Registers.CarryFlag = ((oldA + value) & 0x100) != 0;
+        Cycles += 8;
+    }
+
+    public static void ADD_SP_r8()
+    {
+        sbyte value = (sbyte)(ReadByte());
+
+        Registers.HalfCarryFlag = ((Stack.SP & 0x0F) + (value & 0x0F)) > 0x0F;
+        Registers.CarryFlag = ((Stack.SP & 0xFF) + (value & 0xFF)) > 0xFF;
+        Registers.ZeroFlag = false;
+        Registers.SubtractFlag = false;
+
+        Stack.SP = (ushort)(Stack.SP + value);
+        Cycles += 16;
+    }
+
+    public static void LD_HL_SP_P_r8()
+    {
+        sbyte value = (sbyte)(ReadByte());
+
+        Registers.HalfCarryFlag = ((Stack.SP & 0x0F) + (value & 0x0F)) > 0x0F;
+        Registers.CarryFlag = ((Stack.SP & 0xFF) + (value & 0xFF)) > 0xFF;
+        Registers.ZeroFlag = false;
+        Registers.SubtractFlag = false;
+
+        Registers.HL = (ushort)(Stack.SP + value);
+        Cycles += 12;
+    }
+
+    public static void ADD_HL_SP()
+    {
+        Registers.CarryFlag = (Registers.HL + Stack.SP) > 0xFFFF;
+        Registers.HalfCarryFlag = ((Registers.HL & 0x0FFF) + (Stack.SP & 0x0FFF)) > 0x0FFF;
+
+        Registers.HL = (ushort)(Registers.HL + Stack.SP);
+        Registers.SubtractFlag = false;
         Cycles += 8;
     }
     
@@ -1694,6 +1768,12 @@ public class SM83
     public static void DEC_BC()
     {
         Registers.BC--;
+        Cycles += 8;
+    }
+
+    public static void DEC_SP()
+    {
+        Stack.SP--;
         Cycles += 8;
     }
     

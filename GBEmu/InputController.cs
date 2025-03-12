@@ -17,6 +17,7 @@ public class InputController
     public void PressButton(GameBoyButton button)
     {
         buttonState &= (byte)~button; // Clear bit (pressed)
+        SM83.RequestInterrupt(SM83.InterruptFlags.Joypad);
     }
 
     public void ReleaseButton(GameBoyButton button)

@@ -208,22 +208,12 @@ public class GPU
 
     private void RequestLCDInterrupt()
     {
-        if (memoryBus != null)
-        {
-            byte ifReg = memoryBus.ReadByte(0xFF0F);
-            ifReg |= 0x02;
-            memoryBus.WriteByte(0xFF0F, ifReg);
-        }
+        SM83.RequestInterrupt(SM83.InterruptFlags.LCDStat);
     }
 
     private void RequestVBlankInterrupt()
-    {
-        if (memoryBus != null)
-        {
-            byte ifReg = memoryBus.ReadByte(0xFF0F);
-            ifReg |= 0x01;
-            memoryBus.WriteByte(0xFF0F, ifReg);
-        }
+    { 
+        SM83.RequestInterrupt(SM83.InterruptFlags.VBlank);
     }
 
     private void RenderScanline()
@@ -478,7 +468,7 @@ public class GPU
             case 0xFF41: return stat;
             case 0xFF42: return scy;
             case 0xFF43: return scx;
-            case 0xFF44: return 0x90;
+            case 0xFF44: return (byte)(Program.UseGameboyDoctor ? 0x90 : ly);
             case 0xFF45: return lyc;
             case 0xFF47: return bgp;
             case 0xFF48: return obp0;
