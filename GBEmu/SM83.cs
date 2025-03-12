@@ -17,7 +17,8 @@ public class SM83
         {0x38, SRL_B},
         {0x19, RR_C},
         {0x1A, RR_D},
-        {0x3F, SRL_A}
+        {0x3F, SRL_A},
+        {0x1B, RR_E}
     };
  
     public static Dictionary<byte, Action> InstructionMap = new Dictionary<byte, Action>
@@ -163,7 +164,11 @@ public class SM83
         {0xBA, CP_A_D},
         {0xB9, CP_A_C},
         {0xB8, CP_A_B},
-        {0xD8, RETC}
+        {0xD8, RETC},
+        {0x08, LDa16_SP},
+        {0x66, LD_H_vHL},
+        {0x33, INC_SP},
+        {0xAD, XOR_A_L}
     }; 
     
     public static MemoryBus MemoryBus;
@@ -321,6 +326,18 @@ public class SM83
         Registers.C = (byte)((Registers.C >> 1) | (Registers.CarryFlag ? 0x80 : 0x00));
 
         Registers.ZeroFlag = Registers.C == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Registers.CarryFlag = newCarry;
+        Cycles += 8;
+    }
+    
+    public static void RR_E()
+    {
+        bool newCarry = (Registers.E & 0x01) != 0;
+        Registers.E = (byte)((Registers.E >> 1) | (Registers.CarryFlag ? 0x80 : 0x00));
+
+        Registers.ZeroFlag = Registers.E == 0;
         Registers.SubtractFlag = false;
         Registers.HalfCarryFlag = false;
         Registers.CarryFlag = newCarry;
@@ -539,6 +556,19 @@ public class SM83
         Registers.SubtractFlag = false;
         Registers.HalfCarryFlag = false;
         Cycles += 8;
+    }
+
+    public static void XOR_A_L()
+    {
+        byte value = Registers.L;
+        byte oldA = Registers.A;
+
+        Registers.A = (byte)(oldA ^ value);
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.CarryFlag = false;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 4;
     }
 
     public static void AND_A()
@@ -1178,7 +1208,7 @@ public class SM83
 
     public static void LD_SP_HL()
     {
-        Registers.SP = Registers.HL;
+        Stack.SP = Registers.HL;
         Cycles += 8;
     }
     
@@ -1294,6 +1324,14 @@ public class SM83
     {
         Registers.H = Registers.A;
         Cycles += 4;
+    }
+
+    public static void LD_H_vHL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        Registers.H = value;
+        Cycles += 8;
     }
     
     public static void LD_H_d8()
@@ -1515,6 +1553,13 @@ public class SM83
         Cycles += 16;
     }
 
+    public static void LDa16_SP()
+    {
+        ushort address = ReadWord();
+        MemoryBus.WriteWord(address, Stack.SP);
+        Cycles += 20;
+    }
+
     public static void LDa16_A()
     {
         ushort address = ReadWord();
@@ -1533,6 +1578,12 @@ public class SM83
     public static void INC_HL()
     {
         Registers.HL++;
+        Cycles += 8;
+    }
+
+    public static void INC_SP()
+    {
+        Stack.SP++;
         Cycles += 8;
     }
     

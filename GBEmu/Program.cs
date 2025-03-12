@@ -173,8 +173,8 @@ public class Program
         while (cyclesThisFrame < CPU_CYCLES_PER_FRAME)
         {
             int previousCycles = SM83.Cycles;
-            await SM83.ExecuteNextInstruction();
             SM83.HandleInterrupts();
+            await SM83.ExecuteNextInstruction();
             int elapsedCycles = SM83.Cycles - previousCycles;
             gpu.Step(elapsedCycles);
             cyclesThisFrame += elapsedCycles;

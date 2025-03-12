@@ -62,7 +62,6 @@ public class Registers
     }
 
     // Special registers
-    public ushort SP { get; set; } // Stack Pointer
     public ushort PC { get; set; } // Program Counter
 
     // Flags (stored in F register)
@@ -106,7 +105,6 @@ public class Registers
         E = 0xD8;
         H = 0x01;
         L = 0x4D;
-        SP = 0xFFFE;
         PC = 0x0100; // Entry point after boot
     }
 }

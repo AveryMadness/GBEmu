@@ -71,8 +71,8 @@ public class MemoryBus
         byte high = (byte)((value >> 8) & 0xFF);
         byte low = (byte)(value & 0xFF);
         
-        WriteByte(address, high);
-        WriteByte((ushort)(address + 1), low);
+        WriteByte(address, low);
+        WriteByte((ushort)(address + 1), high);
     }
 
     public void WriteByte(ushort address, byte value)
