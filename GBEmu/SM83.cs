@@ -4,7 +4,6 @@ namespace GBEmu;
 
 public class SM83
 {
-
     public static Dictionary<byte, Action> PrefixInstructionMap = new Dictionary<byte, Action>
     {
         {0x11, RL_C},
@@ -219,6 +218,7 @@ public class SM83
         {0xEF, RST_28},
         {0xF0, LDHA_n8},
         {0xF1, POP_AF},
+        {0xF2, LDH_A_vC},
         {0xF3, DI},
         {0xF5, PUSH_AF},
         {0xF6, OR_A_n8},
@@ -2150,6 +2150,14 @@ public class SM83
         ushort address = ReadWord();
         Stack.SP = address;
         Cycles += 12;
+    }
+
+    public static void LDH_A_vC()
+    {
+        ushort address = (ushort)(0xFF00 + Registers.C);
+        byte value = MemoryBus.ReadByte(address);
+        Registers.A = value;
+        Cycles += 8;
     }
 
     public static void INC_HL()

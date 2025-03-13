@@ -2,7 +2,7 @@
 
 namespace GBEmu;
 
-public class GPU
+public class PPU
 {
     private const byte LCDC_BG_DISPLAY = 0x01;
     private const byte LCDC_OBJ_ENABLE = 0x02;
@@ -56,7 +56,7 @@ public class GPU
 
     private MemoryBus memoryBus;
 
-    public GPU()
+    public PPU()
     {
         Reset();
     }

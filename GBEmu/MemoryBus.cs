@@ -5,15 +5,15 @@ public class MemoryBus
     private byte[] ram = new byte[0x10000];  // Full 64KB addressable space
     private Cartridge cartridge;
     private byte[] bootRom;
-    private GPU gpu;
+    private PPU ppu;
     private InputController input;
     public bool useBootRom = true;
 
-    public MemoryBus(byte[] bootRom, Cartridge cart, GPU gpu, InputController input)
+    public MemoryBus(byte[] bootRom, Cartridge cart, PPU ppu, InputController input)
     {
         this.bootRom = bootRom;
         this.cartridge = cart;
-        this.gpu = gpu;
+        this.ppu = ppu;
         this.input = input;
     }
 
@@ -38,7 +38,7 @@ public class MemoryBus
             }
 
             case >= 0x8000 and <= 0x9FFF: // VRAM
-                return gpu.ReadVRAM(address);
+                return ppu.ReadVRAM(address);
 
             case >= 0xA000 and <= 0xBFFF: // External Cartridge RAM
                 return cartridge.ReadRAM(address);
@@ -50,7 +50,7 @@ public class MemoryBus
                 return ram[address - 0x2000];
 
             case >= 0xFE00 and <= 0xFE9F: // OAM (sprite data)
-                return gpu.ReadOAM(address);
+                return ppu.ReadOAM(address);
 
             case >= 0xFF00 and <= 0xFF7F: // I/O Registers
                 return HandleIORead(address);
@@ -90,7 +90,7 @@ public class MemoryBus
                 break;
 
             case >= 0x8000 and <= 0x9FFF: // VRAM
-                gpu.WriteVRAM(address, value);
+                ppu.WriteVRAM(address, value);
                 break;
 
             case >= 0xA000 and <= 0xBFFF: // External RAM
@@ -106,7 +106,7 @@ public class MemoryBus
                 break;
 
             case >= 0xFE00 and <= 0xFE9F: // OAM
-                gpu.WriteOAM(address, value);
+                ppu.WriteOAM(address, value);
                 break;
 
             case >= 0xFF00 and <= 0xFF7F: // I/O Registers
@@ -131,7 +131,7 @@ public class MemoryBus
                 return input.Read();
 
             case >= 0xFF40 and <= 0xFF4F: // GPU Registers
-                return gpu.ReadRegister(address);
+                return ppu.ReadRegister(address);
 
             default:
                 return ram[address]; // Default to standard RAM behavior
@@ -147,7 +147,7 @@ public class MemoryBus
                 break;
 
             case >= 0xFF40 and <= 0xFF4F: // GPU Registers
-                gpu.WriteRegister(address, value);
+                ppu.WriteRegister(address, value);
                 break;
 
             default:

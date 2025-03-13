@@ -12,7 +12,7 @@ namespace GBEmu;
 public class Program
 {
     public static MemoryBus MemoryBus;
-    public static GPU gpu;
+    public static PPU Ppu;
     private static RenderWindow window;
     private static Texture texture;
     private static Sprite sprite;
@@ -31,7 +31,7 @@ public class Program
     
     public static async void MainAsync(string[] args)
     {
-        FileStream fileStream = new FileStream("cpu_instrs.gb", FileMode.Open);
+        FileStream fileStream = new FileStream("cpu-instrs.gb", FileMode.Open);
         
         fileStream.Seek(0x147, SeekOrigin.Begin);
         byte[] cartTypeBuffer = new byte[1]; 
@@ -44,14 +44,14 @@ public class Program
         fileStream.Flush();
         fileStream.Close();
 
-        Cartridge cartridge = new Cartridge(File.ReadAllBytes("cpu_instrs.gb"), cartridgeType);
-        gpu = new GPU();
+        Cartridge cartridge = new Cartridge(File.ReadAllBytes("cpu-instrs.gb"), cartridgeType);
+        Ppu = new PPU();
         InputController inputController = new InputController();
 
         byte[] bootRom = File.ReadAllBytes("dmg_boot.bin");
 
-        MemoryBus memoryBus = new MemoryBus(bootRom, cartridge, gpu, inputController);
-        gpu.SetMemoryBus(memoryBus);
+        MemoryBus memoryBus = new MemoryBus(bootRom, cartridge, Ppu, inputController);
+        Ppu.SetMemoryBus(memoryBus);
         
         window = new RenderWindow(new VideoMode(160, 144), "GBEmu");
         window.Closed += (sender, e) => running = false;
@@ -196,7 +196,7 @@ public class Program
             }
             
             int elapsedCycles = SM83.Cycles - previousCycles;
-            gpu.Step(elapsedCycles);
+            Ppu.Step(elapsedCycles);
             cyclesThisFrame += elapsedCycles;
         }
 
