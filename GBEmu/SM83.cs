@@ -18,164 +18,209 @@ public class SM83
         {0x19, RR_C},
         {0x1A, RR_D},
         {0x3F, SRL_A},
-        {0x1B, RR_E}
+        {0x1B, RR_E},
+        {0x50, BIT_2_B},
+        {0x60, BIT_4_B},
+        {0x68, BIT_5_B},
+        {0x58, BIT_3_B},
+        {0x7E, BIT_7_vHL},
+        {0x40, BIT_0_B},
+        {0x5F, BIT_3_A},
+        {0x70, BIT_6_B},
+        {0x7B, BIT_7_E},
+        {0x78, BIT_7_B}
     };
  
     public static Dictionary<byte, Action> InstructionMap = new Dictionary<byte, Action>
     {
         {0x00, NOP},
         {0x01, LD_BC_n16},
-        {0x05, DEC_B},
-        {0x0B, DEC_BC},
-        {0x0D, DEC_C},
-        {0xC3, JP_nn},
-        {0x18, JR_e},
-        {0x20, JRNZ_e8},
-        {0xAF, XORA_A},
-        {0x21, LDHL_n16},
-        {0x11, LD_DE},
-        {0x0E, LD_C},
-        {0x06, LD_B},
-        {0x32, LDHLDEC_A},
-        {0x3E, LD_A},
-        {0xE0, LDHn8_A},
-        {0xF0, LDHA_n8},
-        {0xF3, DI},
-        {0xFB, EI},
-        {0xFE, CPA_n8},
-        {0x36, LDHL_n8},
-        {0xEA, LDa16_A},
-        {0x31, LDSP_n16},
-        {0x2A, LDA_HLINC},
-        {0xE2, LDHC_A},
         {0x03, INC_BC},
-        {0x0C, INC_C},
-        {0xCD, CALL},
-        {0x78, LD_A_B},
-        {0xB1, OR_A_C},
-        {0xC9, RET},
-        {0xD9, RETI},
-        {0xC5, PUSH_BC},
-        {0xD5, PUSH_DE},
-        {0xE5, PUSH_HL},
-        {0xF5, PUSH_AF},
-        {0xA7, AND_A},
-        {0x28, JR_Z_e8},
-        {0xC0, RETNZ},
-        {0xFA, LD_A_a16},
-        {0xC8, RETZ},
-        {0x3D, DEC_A},
-        {0x34, INC_HLA},
-        {0x3C, INC_A},
-        {0xC1, POP_BC},
-        {0xD1, POP_DE},
-        {0xE1, POP_HL},
-        {0xF1, POP_AF},
-        {0x2F, CPL},
-        {0xCB, PREFIX},
-        {0x77, LDHL_A},
-        {0x1A, LD_A_DE},
-        {0x4F, LD_C_A},
-        {0x17, RLA},
-        {0x22, LDHLINC_A},
-        {0x23, INC_HL},
-        {0x13, INC_DE},
-        {0x7B, LD_A_E},
-        {0x2E, LD_L_n8},
-        {0x67, LD_H_A},
-        {0x57, LD_D_A},
         {0x04, INC_B},
-        {0x1E, LD_E_n8},
-        {0x1D, DEC_E},
-        {0x24, INC_H},
-        {0x7C, LD_A_H},
-        {0x90, SUB_A_B},
+        {0x05, DEC_B},
+        {0x06, LD_B},
+        {0x07, RCLA},
+        {0x08, LDa16_SP},
+        {0x09, ADD_HL_BC},
+        {0x0A, LD_A_BC},
+        {0x0B, DEC_BC},
+        {0x0C, INC_C},
+        {0x0D, DEC_C},
+        {0x0E, LD_C},
+        {0x10, STOP},
+        {0x11, LD_DE},
+        {0x12, LD_DE_A},
+        {0x13, INC_DE},
+        {0x14, INC_D},
         {0x15, DEC_D},
         {0x16, LD_D_n8},
-        {0xBE, CPA_HL},
-        {0x7D, LD_A_L},
-        {0x86, ADD_A_HL},
-        {0xE6, AND_A_n8},
-        {0x47, LD_B_A},
-        {0xB0, OR_A_B},
-        {0xA9, XORA_C},
-        {0xA1, AND_A_C},
-        {0x79, LD_A_C},
-        {0xEF, RST_28},
-        {0x87, ADD_A_A},
-        {0x5F, LD_E_A},
+        {0x17, RLA},
+        {0x18, JR_e},
         {0x19, ADD_HL_DE},
-        {0x5E, LD_E_HL},
-        {0x56, LD_D_HL},
-        {0xE9, JP_HL},
-        {0x12, LD_DE_A},
+        {0x1A, LD_A_DE},
+        {0x1B, DEC_DE},
         {0x1C, INC_E},
-        {0xCA, JP_Z},
-        {0x7E, LD_A_HL},
-        {0x35, DEC_VHL},
-        {0x2C, INC_L},
-        {0x09, ADD_HL_BC},
-        {0x4E, LD_C_HL},
-        {0x46, LD_B_HL},
-        {0x69, LD_L_C},
-        {0x60, LD_H_B},
-        {0x0A, LD_A_BC},
-        {0x85, ADD_A_L},
-        {0x6F, LD_L_A},
-        {0xC2, JP_NZ},
-        {0x3A, LD_A_HLDEC},
-        {0x7A, LD_A_D},
-        {0x73, LD_HL_E},
-        {0x72, LD_HL_D},
-        {0x71, LD_HL_C},
-        {0x2D, DEC_L},
-        {0xC6, ADD_A_n8},
-        {0x5D, LD_E_L},
-        {0x54, LD_D_H},
-        {0xF6, OR_A_n8},
-        {0x6B, LD_L_E},
-        {0x62, LD_H_D},
-        {0x40, LD_B_B},
-        {0x76, HALT},
-        {0xC4, CALL_NZ},
-        {0xD6, SUB_d8},
-        {0xB7, OR_A},
-        {0xAE, XOR_vHL},
-        {0x26, LD_H_d8},
+        {0x1D, DEC_E},
+        {0x1E, LD_E_n8},
         {0x1F, RRA},
-        {0x30, JP_NC_r8},
+        {0x20, JRNZ_e8},
+        {0x21, LDHL_n16},
+        {0x22, LDHLINC_A},
+        {0x23, INC_HL},
+        {0x24, INC_H},
         {0x25, DEC_H},
-        {0xEE, XOR_A_d8},
-        {0x70, LD_vHL_B},
-        {0x10, STOP},
-        {0xF9, LD_SP_HL},
-        {0x07, RCLA},
-        {0xD0, RETNC},
-        {0x91, SUB_A_C},
-        {0x81, ADD_A_C},
-        {0xFF, RST_38},
-        {0x14, INC_D},
-        {0xCE, ADC_A_n8},
-        {0xB6, OR_A_vHL},
-        {0x6E, LD_L_vHL},
-        {0x29, ADD_HL_HL},
-        {0xBB, CP_A_E},
+        {0x26, LD_H_d8},
         {0x27, DAA},
-        {0xBA, CP_A_D},
-        {0xB9, CP_A_C},
-        {0xB8, CP_A_B},
-        {0xD8, RETC},
-        {0x08, LDa16_SP},
-        {0x66, LD_H_vHL},
+        {0x28, JR_Z_e8},
+        {0x29, ADD_HL_HL},
+        {0x2A, LDA_HLINC},
+        {0x2B, DEC_HL},
+        {0x2C, INC_L},
+        {0x2D, DEC_L},
+        {0x2E, LD_L_n8},
+        {0x2F, CPL},
+        {0x30, JP_NC_r8},
+        {0x31, LDSP_n16},
+        {0x32, LDHLDEC_A},
         {0x33, INC_SP},
-        {0xAD, XOR_A_L},
-        {0x3B, DEC_SP},
-        {0x39, ADD_HL_SP},
-        {0xE8, ADD_SP_r8},
-        {0xF8, LD_HL_SP_P_r8},
+        {0x34, INC_HLA},
+        {0x35, DEC_VHL},
+        {0x36, LDHL_n8},
         {0x38, JR_C_e8},
-        {0xDE, SBC_A_n8}
-    }; 
+        {0x39, ADD_HL_SP},
+        {0x3A, LD_A_HLDEC},
+        {0x3B, DEC_SP},
+        {0x3C, INC_A},
+        {0x3D, DEC_A},
+        {0x3E, LD_A},
+        {0x40, LD_B_B},
+        {0x41, LD_B_C},
+        {0x42, LD_B_D},
+        {0x43, LD_B_E},
+        {0x44, LD_B_H},
+        {0x45, LD_B_L},
+        {0x46, LD_B_HL},
+        {0x47, LD_B_A},
+        {0x48, LD_C_B},
+        {0x49, LD_C_C},
+        {0x4A, LD_C_D},
+        {0x4B, LD_C_E},
+        {0x4C, LD_C_H},
+        {0x4D, LD_C_L},
+        {0x4E, LD_C_vHL},
+        {0x4F, LD_C_A},
+        {0x50, LD_D_B},
+        {0x51, LD_D_C},
+        {0x52, LD_D_D},
+        {0x53, LD_D_E},
+        {0x54, LD_D_H},
+        {0x55, LD_D_L},
+        {0x56, LD_D_HL},
+        {0x57, LD_D_A},
+        {0x58, LD_E_B},
+        {0x59, LD_E_C},
+        {0x5A, LD_E_D},
+        {0x5B, LD_E_E},
+        {0x5C, LD_E_H},
+        {0x5D, LD_E_L},
+        {0x5E, LD_E_HL},
+        {0x5F, LD_E_A},
+        {0x60, LD_H_B},
+        {0x61, LD_H_C},
+        {0x62, LD_H_D},
+        {0x63, LD_H_E},
+        {0x64, LD_H_H},
+        {0x65, LD_H_L},
+        {0x66, LD_H_vHL},
+        {0x67, LD_H_A},
+        {0x68, LD_L_B},
+        {0x69, LD_L_C},
+        {0x6A, LD_L_D},
+        {0x6B, LD_L_E},
+        {0x6C, LD_L_H},
+        {0x6D, LD_L_L},
+        {0x6E, LD_L_vHL},
+        {0x6F, LD_L_A},
+        {0x70, LD_vHL_B},
+        {0x71, LD_HL_C},
+        {0x72, LD_HL_D},
+        {0x73, LD_HL_E},
+        {0x74, LD_vHL_H},
+        {0x75, LD_vHL_L},
+        {0x76, HALT},
+        {0x77, LDHL_A},
+        {0x78, LD_A_B},
+        {0x79, LD_A_C},
+        {0x7A, LD_A_D},
+        {0x7B, LD_A_E},
+        {0x7C, LD_A_H},
+        {0x7D, LD_A_L},
+        {0x7E, LD_A_HL},
+        {0x7F, LD_A_A},
+        {0x85, ADD_A_L},
+        {0x86, ADD_A_HL},
+        {0x87, ADD_A_A},
+        {0x90, SUB_A_B},
+        {0x91, SUB_A_C},
+        {0xA1, AND_A_C},
+        {0xA7, AND_A},
+        {0xA9, XORA_C},
+        {0xAE, XOR_vHL},
+        {0xAF, XORA_A},
+        {0xAD, XOR_A_L},
+        {0xB0, OR_A_B},
+        {0xB1, OR_A_C},
+        {0xB6, OR_A_vHL},
+        {0xB7, OR_A},
+        {0xB8, CP_A_B},
+        {0xB9, CP_A_C},
+        {0xBA, CP_A_D},
+        {0xBB, CP_A_E},
+        {0xBE, CPA_HL},
+        {0xC0, RETNZ},
+        {0xC1, POP_BC},
+        {0xC2, JP_NZ},
+        {0xC3, JP_nn},
+        {0xC4, CALL_NZ},
+        {0xC5, PUSH_BC},
+        {0xC6, ADD_A_n8},
+        {0xC8, RETZ},
+        {0xC9, RET},
+        {0xCA, JP_Z},
+        {0xCB, PREFIX},
+        {0xCD, CALL},
+        {0xCE, ADC_A_n8},
+        {0xCF, RST_08},
+        {0xD0, RETNC},
+        {0xD1, POP_DE},
+        {0xD5, PUSH_DE},
+        {0xD6, SUB_d8},
+        {0xD8, RETC},
+        {0xD9, RETI},
+        {0xDE, SBC_A_n8},
+        {0xE0, LDHn8_A},
+        {0xE1, POP_HL},
+        {0xE2, LDHC_A},
+        {0xE5, PUSH_HL},
+        {0xE6, AND_A_n8},
+        {0xE8, ADD_SP_r8},
+        {0xE9, JP_HL},
+        {0xEA, LDa16_A},
+        {0xEE, XOR_A_d8},
+        {0xEF, RST_28},
+        {0xF0, LDHA_n8},
+        {0xF1, POP_AF},
+        {0xF3, DI},
+        {0xF5, PUSH_AF},
+        {0xF6, OR_A_n8},
+        {0xF8, LD_HL_SP_P_r8},
+        {0xF9, LD_SP_HL},
+        {0xFA, LD_A_a16},
+        {0xFB, EI},
+        {0xFE, CPA_n8},
+        {0xFF, RST_38}
+    };
+
     
     public static MemoryBus MemoryBus;
     public static ushort ProgramCounter = 0;
@@ -332,6 +377,107 @@ public class SM83
     public static void BIT_7_H()
     {
         byte register = Registers.H;
+        bool bitSet = IsBitSet(register, 7);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+
+    public static void BIT_7_vHL()
+    {
+        ushort address = Registers.HL;
+        byte register = MemoryBus.ReadByte(address);
+        bool bitSet = IsBitSet(register, 7);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 12;
+    }
+    
+    public static void BIT_0_B()
+    {
+        byte register = Registers.B;
+        bool bitSet = IsBitSet(register, 0);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_2_B()
+    {
+        byte register = Registers.B;
+        bool bitSet = IsBitSet(register, 2);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_3_B()
+    {
+        byte register = Registers.B;
+        bool bitSet = IsBitSet(register, 3);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_3_A()
+    {
+        byte register = Registers.A;
+        bool bitSet = IsBitSet(register, 3);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_4_B()
+    {
+        byte register = Registers.B;
+        bool bitSet = IsBitSet(register, 4);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_5_B()
+    {
+        byte register = Registers.B;
+        bool bitSet = IsBitSet(register, 5);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_6_B()
+    {
+        byte register = Registers.B;
+        bool bitSet = IsBitSet(register, 6);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_7_B()
+    {
+        byte register = Registers.B;
+        bool bitSet = IsBitSet(register, 7);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_7_E()
+    {
+        byte register = Registers.E;
         bool bitSet = IsBitSet(register, 7);
         Registers.ZeroFlag = !bitSet;
         Registers.SubtractFlag = false;
@@ -731,7 +877,6 @@ public class SM83
         ushort value = Registers.BC;
         ushort oldA = Registers.HL;
         Registers.HL += value;
-        Registers.ZeroFlag = Registers.HL == 0;
         Registers.SubtractFlag = false;
         Registers.HalfCarryFlag = CheckHalfCarry_Add16(oldA, value);
         Registers.CarryFlag = ((oldA + value) & 0x10000) != 0;
@@ -919,6 +1064,13 @@ public class SM83
         }
     }
 
+    public static void RST_08()
+    {
+        Stack.Push(ProgramCounter);
+        ProgramCounter = 0x0008;
+        Cycles += 16;
+    }
+    
     public static void RST_28()
     {
         Stack.Push(ProgramCounter);
@@ -1386,6 +1538,36 @@ public class SM83
         Cycles += 4;
     }
     
+    public static void LD_E_B()
+    {
+        Registers.E = Registers.B;
+        Cycles += 4;
+    }
+    
+    public static void LD_E_C()
+    {
+        Registers.E = Registers.C;
+        Cycles += 4;
+    }
+    
+    public static void LD_E_D()
+    {
+        Registers.E = Registers.D;
+        Cycles += 4;
+    }
+    
+    public static void LD_E_E()
+    {
+        Registers.E = Registers.E;
+        Cycles += 4;
+    }
+    
+    public static void LD_E_H()
+    {
+        Registers.E = Registers.H;
+        Cycles += 4;
+    }
+    
     public static void LD_E_L()
     {
         Registers.E = Registers.L;
@@ -1460,11 +1642,49 @@ public class SM83
         Registers.H = Registers.B;
         Cycles += 4;
     }
+    
+    public static void LD_H_C()
+    {
+        Registers.H = Registers.C;
+        Cycles += 4;
+    }
+    
+    public static void LD_H_E()
+    {
+        Registers.H = Registers.E;
+        Cycles += 4;
+    }
+    
+    public static void LD_H_H()
+    {
+        Registers.H = Registers.H;
+        Cycles += 4;
+    }
+    
+    public static void LD_H_L()
+    {
+        Registers.H = Registers.L;
+        Cycles += 4;
+    }
 
     public static void LD_HL_E()
     {
         ushort address = Registers.HL;
         MemoryBus.WriteByte(address, Registers.E);
+        Cycles += 8;
+    }
+    
+    public static void LD_vHL_H()
+    {
+        ushort address = Registers.HL;
+        MemoryBus.WriteByte(address, Registers.H);
+        Cycles += 8;
+    }
+    
+    public static void LD_vHL_L()
+    {
+        ushort address = Registers.HL;
+        MemoryBus.WriteByte(address, Registers.L);
         Cycles += 8;
     }
 
@@ -1497,13 +1717,73 @@ public class SM83
     
     public static void LD_B_B()
     {
-        Registers.B = Registers.A;
+        Registers.B = Registers.B;
+        Cycles += 4;
+    }
+    
+    public static void LD_B_C()
+    {
+        Registers.B = Registers.C;
+        Cycles += 4;
+    }
+    
+    public static void LD_B_D()
+    {
+        Registers.B = Registers.D;
+        Cycles += 4;
+    }
+    
+    public static void LD_B_E()
+    {
+        Registers.B = Registers.E;
+        Cycles += 4;
+    }
+    
+    public static void LD_B_H()
+    {
+        Registers.B = Registers.H;
+        Cycles += 4;
+    }
+    
+    public static void LD_B_L()
+    {
+        Registers.B = Registers.L;
         Cycles += 4;
     }
     
     public static void LD_D_A()
     {
         Registers.D = Registers.A;
+        Cycles += 4;
+    }
+    
+    public static void LD_D_B()
+    {
+        Registers.D = Registers.B;
+        Cycles += 4;
+    }
+    
+    public static void LD_D_C()
+    {
+        Registers.D = Registers.C;
+        Cycles += 4;
+    }
+    
+    public static void LD_D_D()
+    {
+        Registers.D = Registers.D;
+        Cycles += 4;
+    }
+    
+    public static void LD_D_E()
+    {
+        Registers.D = Registers.E;
+        Cycles += 4;
+    }
+    
+    public static void LD_D_L()
+    {
+        Registers.D = Registers.L;
         Cycles += 4;
     }
     
@@ -1575,15 +1855,39 @@ public class SM83
         Cycles += 4;
     }
     
+    public static void LD_L_B()
+    {
+        Registers.L = Registers.B;
+        Cycles += 4;
+    }
+    
     public static void LD_L_C()
     {
         Registers.L = Registers.C;
         Cycles += 4;
     }
     
+    public static void LD_L_D()
+    {
+        Registers.L = Registers.D;
+        Cycles += 4;
+    }
+    
     public static void LD_L_E()
     {
         Registers.L = Registers.E;
+        Cycles += 4;
+    }
+    
+    public static void LD_L_H()
+    {
+        Registers.L = Registers.H;
+        Cycles += 4;
+    }
+    
+    public static void LD_L_L()
+    {
+        Registers.L = Registers.L;
         Cycles += 4;
     }
     
@@ -1608,6 +1912,42 @@ public class SM83
     public static void LD_C_A()
     {
         Registers.C = Registers.A;
+        Cycles += 4;
+    }
+    
+    public static void LD_C_B()
+    {
+        Registers.C = Registers.B;
+        Cycles += 4;
+    }
+    
+    public static void LD_C_C()
+    {
+        Registers.C = Registers.C;
+        Cycles += 4;
+    }
+    
+    public static void LD_C_D()
+    {
+        Registers.C = Registers.D;
+        Cycles += 4;
+    }
+    
+    public static void LD_C_E()
+    {
+        Registers.C = Registers.E;
+        Cycles += 4;
+    }
+    
+    public static void LD_C_H()
+    {
+        Registers.C = Registers.H;
+        Cycles += 4;
+    }
+    
+    public static void LD_C_L()
+    {
+        Registers.C = Registers.L;
         Cycles += 4;
     }
 
@@ -1639,7 +1979,7 @@ public class SM83
         Cycles += 8;
     }
     
-    public static void LD_C_HL()
+    public static void LD_C_vHL()
     {
         byte value = MemoryBus.ReadByte(Registers.HL);
         Registers.C = value;
@@ -1651,6 +1991,12 @@ public class SM83
         byte value = ReadByte();
         Registers.A = value;
         Cycles += 8;
+    }
+
+    public static void LD_A_A()
+    {
+        Registers.A = Registers.A;
+        Cycles += 4;
     }
 
     public static void LD_A_a16()
@@ -1802,6 +2148,18 @@ public class SM83
     public static void DEC_BC()
     {
         Registers.BC--;
+        Cycles += 8;
+    }
+
+    public static void DEC_HL()
+    {
+        Registers.HL--;
+        Cycles += 8;
+    }
+
+    public static void DEC_DE()
+    {
+        Registers.DE--;
         Cycles += 8;
     }
 
