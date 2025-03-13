@@ -184,25 +184,34 @@ public class SM83
         {0xC4, CALL_NZ},
         {0xC5, PUSH_BC},
         {0xC6, ADD_A_n8},
+        {0xC7, RST_00},
         {0xC8, RETZ},
         {0xC9, RET},
         {0xCA, JP_Z},
         {0xCB, PREFIX},
+        {0xCC, CALL_Z},
         {0xCD, CALL},
         {0xCE, ADC_A_n8},
         {0xCF, RST_08},
         {0xD0, RETNC},
         {0xD1, POP_DE},
+        {0xD2, JP_NC_a16},
+        {0xD4, CALL_NC},
         {0xD5, PUSH_DE},
         {0xD6, SUB_d8},
+        {0xD7, RST_10},
         {0xD8, RETC},
         {0xD9, RETI},
+        {0xDA, JP_C_a16},
+        {0xDC, CALL_C},
         {0xDE, SBC_A_n8},
+        {0xDF, RST_18},
         {0xE0, LDHn8_A},
         {0xE1, POP_HL},
         {0xE2, LDHC_A},
         {0xE5, PUSH_HL},
         {0xE6, AND_A_n8},
+        {0xE7, RST_20},
         {0xE8, ADD_SP_r8},
         {0xE9, JP_HL},
         {0xEA, LDa16_A},
@@ -213,6 +222,7 @@ public class SM83
         {0xF3, DI},
         {0xF5, PUSH_AF},
         {0xF6, OR_A_n8},
+        {0xF7, RST_30},
         {0xF8, LD_HL_SP_P_r8},
         {0xF9, LD_SP_HL},
         {0xFA, LD_A_a16},
@@ -1048,6 +1058,22 @@ public class SM83
         Cycles += 24;
     }
 
+    public static void CALL_Z()
+    {
+        ushort address = ReadWord();
+
+        if (Registers.ZeroFlag)
+        {
+            Stack.Push(ProgramCounter);
+            ProgramCounter = address;
+            Cycles += 24;
+        }
+        else
+        {
+            Cycles += 12;
+        }
+    }
+
     public static void CALL_NZ()
     {
         ushort address = ReadWord();
@@ -1063,6 +1089,45 @@ public class SM83
             Cycles += 12;
         }
     }
+    
+    public static void CALL_NC()
+    {
+        ushort address = ReadWord();
+
+        if (!Registers.CarryFlag)
+        {
+            Stack.Push(ProgramCounter);
+            ProgramCounter = address;
+            Cycles += 24;
+        }
+        else
+        {
+            Cycles += 12;
+        }
+    }
+    
+    public static void CALL_C()
+    {
+        ushort address = ReadWord();
+
+        if (Registers.CarryFlag)
+        {
+            Stack.Push(ProgramCounter);
+            ProgramCounter = address;
+            Cycles += 24;
+        }
+        else
+        {
+            Cycles += 12;
+        }
+    }
+    
+    public static void RST_00()
+    {
+        Stack.Push(ProgramCounter);
+        ProgramCounter = 0x0000;
+        Cycles += 16;
+    }
 
     public static void RST_08()
     {
@@ -1071,10 +1136,38 @@ public class SM83
         Cycles += 16;
     }
     
+    public static void RST_10()
+    {
+        Stack.Push(ProgramCounter);
+        ProgramCounter = 0x0010;
+        Cycles += 16;
+    }
+    
+    public static void RST_18()
+    {
+        Stack.Push(ProgramCounter);
+        ProgramCounter = 0x0018;
+        Cycles += 16;
+    }
+    
+    public static void RST_20()
+    {
+        Stack.Push(ProgramCounter);
+        ProgramCounter = 0x0020;
+        Cycles += 16;
+    }
+    
     public static void RST_28()
     {
         Stack.Push(ProgramCounter);
         ProgramCounter = 0x0028;
+        Cycles += 16;
+    }
+    
+    public static void RST_30()
+    {
+        Stack.Push(ProgramCounter);
+        ProgramCounter = 0x0030;
         Cycles += 16;
     }
     
@@ -1297,6 +1390,36 @@ public class SM83
         ushort address = ReadWord();
         ProgramCounter = address;
         Cycles += 16;
+    }
+    
+    public static void JP_C_a16()
+    {
+        ushort address = ReadWord();
+
+        if (Registers.CarryFlag)
+        {
+            ProgramCounter = address;
+            Cycles += 16;
+        }
+        else
+        {
+            Cycles += 12;
+        }
+    }
+
+    public static void JP_NC_a16()
+    {
+        ushort address = ReadWord();
+
+        if (!Registers.CarryFlag)
+        {
+            ProgramCounter = address;
+            Cycles += 16;
+        }
+        else
+        {
+            Cycles += 12;
+        }
     }
 
     public static void JP_NC_r8()
