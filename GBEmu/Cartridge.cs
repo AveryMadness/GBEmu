@@ -12,7 +12,7 @@ public class Cartridge
     private CartridgeType type;
 
     private const int KB = 1024;
-    private const int MB = 1024 * 1024;
+    private const int MB = 1024 * KB;
 
     public bool HasRam()    
     {

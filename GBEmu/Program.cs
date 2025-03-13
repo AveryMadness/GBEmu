@@ -31,7 +31,7 @@ public class Program
     
     public static async void MainAsync(string[] args)
     {
-        FileStream fileStream = new FileStream("cpu-instrs.gb", FileMode.Open);
+        FileStream fileStream = new FileStream("cpu_instrs.gb", FileMode.Open);
         
         fileStream.Seek(0x147, SeekOrigin.Begin);
         byte[] cartTypeBuffer = new byte[1]; 
@@ -44,7 +44,7 @@ public class Program
         fileStream.Flush();
         fileStream.Close();
 
-        Cartridge cartridge = new Cartridge(File.ReadAllBytes("cpu-instrs.gb"), cartridgeType);
+        Cartridge cartridge = new Cartridge(File.ReadAllBytes("cpu_instrs.gb"), cartridgeType);
         Ppu = new PPU();
         InputController inputController = new InputController();
 
