@@ -6,18 +6,66 @@ public class SM83
 {
     public static Dictionary<byte, Action> PrefixInstructionMap = new Dictionary<byte, Action>
     {
+        {0x00, RLC_B},
+        {0x01, RLC_C},
+        {0x02, RLC_D},
+        {0x03, RLC_E},
+        {0x04, RLC_H},
+        {0x05, RLC_L},
+        {0x07, RLC_A},
+        {0x08, RRC_B},
+        {0x09, RRC_C},
+        {0x0A, RRC_D},
+        {0x0B, RRC_E},
+        {0x0C, RRC_H},
+        {0x0D, RRC_L},
+        {0x0F, RRC_A},
+        {0x10, RL_B},
         {0x11, RL_C},
-        {0x7C, BIT_7_H},
-        {0x37, SWAP_A},
-        {0x87, RES_0_A},
-        {0x27, SLA_A},
-        {0x7F, BIT_7_A},
-        {0x86, RES_0_VHL},
-        {0x38, SRL_B},
+        {0x12, RL_D},
+        {0x13, RL_E},
+        {0x14, RL_H},
+        {0x15, RL_L},
+        {0x17, RL_A},
+        {0x18, RR_B},
         {0x19, RR_C},
         {0x1A, RR_D},
-        {0x3F, SRL_A},
         {0x1B, RR_E},
+        {0x1C, RR_H},
+        {0x1D, RR_L},
+        {0x1F, RR_A},
+        {0x20, SLA_B},
+        {0x21, SLA_C},
+        {0x22, SLA_D},
+        {0x23, SLA_E},
+        {0x24, SLA_H},
+        {0x25, SLA_L},
+        {0x27, SLA_A},
+        {0x28, SRA_B},
+        {0x29, SRA_C},
+        {0x2A, SRA_D},
+        {0x2B, SRA_E},
+        {0x2C, SRA_H},
+        {0x2D, SRA_L},
+        {0x2F, SRA_A},
+        {0x30, SWAP_B},
+        {0x31, SWAP_C},
+        {0x32, SWAP_D},
+        {0x33, SWAP_E},
+        {0x34, SWAP_H},
+        {0x35, SWAP_L},
+        {0x37, SWAP_A},
+        {0x38, SRL_B},
+        {0x39, SRL_C},
+        {0x3A, SRL_D},
+        {0x3B, SRL_E},
+        {0x3C, SRL_H},
+        {0x3D, SRL_L},
+        {0x3F, SRL_A},
+        {0x7C, BIT_7_H},
+        {0x87, RES_0_A},
+        {0x7F, BIT_7_A},
+        {0x86, RES_0_VHL},
         {0x50, BIT_2_B},
         {0x60, BIT_4_B},
         {0x68, BIT_5_B},
@@ -49,6 +97,7 @@ public class SM83
         {0x0C, INC_C},
         {0x0D, DEC_C},
         {0x0E, LD_C},
+        {0x0F, RRCA},
         {0x10, STOP},
         {0x11, LD_DE},
         {0x12, LD_DE_A},
@@ -178,13 +227,33 @@ public class SM83
         {0x8F, ADC_A_A},
         {0x90, SUB_A_B},
         {0x91, SUB_A_C},
+        {0x92, SUB_A_D},
+        {0x93, SUB_A_E},
+        {0x94, SUB_A_H},
+        {0x95, SUB_A_L},
+        {0x97, SUB_A_A},
         {0x98, SBC_A_B},
+        {0x99, SBC_A_C},
+        {0x9A, SBC_A_D},
+        {0x9B, SBC_A_E},
+        {0x9C, SBC_A_H},
+        {0x9D, SBC_A_L},
+        {0x9F, SBC_A_A},
+        {0xA0, AND_A_B},
         {0xA1, AND_A_C},
+        {0xA2, AND_A_D},
+        {0xA3, AND_A_E},
+        {0xA4, AND_A_H},
+        {0xA5, AND_A_L},
         {0xA7, AND_A},
+        {0xA8, XOR_A_B},
         {0xA9, XORA_C},
+        {0xAA, XOR_A_D},
+        {0xAB, XOR_A_E},
+        {0xAC, XOR_A_H},
+        {0xAD, XOR_A_L},
         {0xAE, XOR_vHL},
         {0xAF, XORA_A},
-        {0xAD, XOR_A_L},
         {0xB0, OR_A_B},
         {0xB1, OR_A_C},
         {0xB2, OR_A_D},
@@ -560,6 +629,185 @@ public class SM83
         Cycles += 8;
     }
 
+    public static void RLC_B()
+    {
+        bool bit7 = IsBitSet(Registers.B, 7);
+        Registers.B = (byte)((Registers.B << 1) | (bit7 ? 1 : 0));
+        Registers.CarryFlag = bit7;
+        Registers.ZeroFlag = Registers.B == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void RLC_C()
+    {
+        byte regValue = Registers.C;
+        bool bit7 = IsBitSet(regValue, 7);
+        Registers.C = (byte)((regValue << 1) | (bit7 ? 1 : 0));
+        Registers.CarryFlag = bit7;
+        Registers.ZeroFlag = Registers.C == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void RLC_D()
+    {
+        byte regValue = Registers.D;
+        bool bit7 = IsBitSet(regValue, 7);
+        Registers.D = (byte)((regValue << 1) | (bit7 ? 1 : 0));
+        Registers.CarryFlag = bit7;
+        Registers.ZeroFlag = Registers.D == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void RLC_E()
+    {
+        byte regValue = Registers.E;
+        bool bit7 = IsBitSet(regValue, 7);
+        Registers.E = (byte)((regValue << 1) | (bit7 ? 1 : 0));
+        Registers.CarryFlag = bit7;
+        Registers.ZeroFlag = Registers.E == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void RLC_H()
+    {
+        byte regValue = Registers.H;
+        bool bit7 = IsBitSet(regValue, 7);
+        Registers.H = (byte)((regValue << 1) | (bit7 ? 1 : 0));
+        Registers.CarryFlag = bit7;
+        Registers.ZeroFlag = Registers.H == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void RLC_L()
+    {
+        byte regValue = Registers.L;
+        bool bit7 = IsBitSet(regValue, 7);
+        Registers.L = (byte)((regValue << 1) | (bit7 ? 1 : 0));
+        Registers.CarryFlag = bit7;
+        Registers.ZeroFlag = Registers.L == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void RLC_A()
+    {
+        byte regValue = Registers.A;
+        bool bit7 = IsBitSet(regValue, 7);
+        Registers.A = (byte)((regValue << 1) | (bit7 ? 1 : 0));
+        Registers.CarryFlag = bit7;
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void RRC_B()
+    {
+        byte regValue = Registers.B;
+        bool bit0 = IsBitSet(regValue, 0);
+        Registers.B = (byte)((regValue >> 1) | (bit0 ? 0x80 : 0x00));
+        Registers.CarryFlag = bit0;
+        Registers.ZeroFlag = Registers.B == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 4;
+    }
+    
+    public static void RRC_C()
+    {
+        byte regValue = Registers.C;
+        bool bit0 = IsBitSet(regValue, 0);
+        Registers.C = (byte)((regValue >> 1) | (bit0 ? 0x80 : 0x00));
+        Registers.CarryFlag = bit0;
+        Registers.ZeroFlag = Registers.C == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 4;
+    }
+    
+    public static void RRC_D()
+    {
+        byte regValue = Registers.D;
+        bool bit0 = IsBitSet(regValue, 0);
+        Registers.D = (byte)((regValue >> 1) | (bit0 ? 0x80 : 0x00));
+        Registers.CarryFlag = bit0;
+        Registers.ZeroFlag = Registers.D == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 4;
+    }
+    
+    public static void RRC_E()
+    {
+        byte regValue = Registers.E;
+        bool bit0 = IsBitSet(regValue, 0);
+        Registers.E = (byte)((regValue >> 1) | (bit0 ? 0x80 : 0x00));
+        Registers.CarryFlag = bit0;
+        Registers.ZeroFlag = Registers.E == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 4;
+    }
+    
+    public static void RRC_H()
+    {
+        byte regValue = Registers.H;
+        bool bit0 = IsBitSet(regValue, 0);
+        Registers.H = (byte)((regValue >> 1) | (bit0 ? 0x80 : 0x00));
+        Registers.CarryFlag = bit0;
+        Registers.ZeroFlag = Registers.H == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 4;
+    }
+    
+    public static void RRC_L()
+    {
+        byte regValue = Registers.L;
+        bool bit0 = IsBitSet(regValue, 0);
+        Registers.L = (byte)((regValue >> 1) | (bit0 ? 0x80 : 0x00));
+        Registers.CarryFlag = bit0;
+        Registers.ZeroFlag = Registers.L == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 4;
+    }
+    
+    public static void RRC_A()
+    {
+        byte regValue = Registers.A;
+        bool bit0 = (regValue & 0x01) != 0;
+        Registers.A = (byte)((regValue >> 1) | (bit0 ? 0x80 : 0x00));
+        Registers.CarryFlag = bit0;
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 4;
+    }
+    
+    public static void RL_B()
+    {
+        byte regValue = Registers.B;
+        bool newCarry = (regValue & 0x80) != 0;
+        Registers.B = (byte)((regValue << 1) | (Registers.CarryFlag ? 1 : 0));
+        Registers.CarryFlag = newCarry;
+        Registers.ZeroFlag = Registers.B == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+
     public static void RL_C()
     {
         bool newCarry = (Registers.C & 0x80) != 0;
@@ -570,6 +818,79 @@ public class SM83
         Registers.HalfCarryFlag = false;
         Cycles += 8;
     }
+    
+    public static void RL_D()
+    {
+        byte regValue = Registers.D;
+        bool newCarry = (regValue & 0x80) != 0;
+        Registers.D = (byte)((regValue << 1) | (Registers.CarryFlag ? 1 : 0));
+        Registers.CarryFlag = newCarry;
+        Registers.ZeroFlag = Registers.D == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void RL_E()
+    {
+        byte regValue = Registers.E;
+        bool newCarry = (regValue & 0x80) != 0;
+        Registers.E = (byte)((regValue << 1) | (Registers.CarryFlag ? 1 : 0));
+        Registers.CarryFlag = newCarry;
+        Registers.ZeroFlag = Registers.E == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void RL_H()
+    {
+        byte regValue = Registers.H;
+        bool newCarry = (regValue & 0x80) != 0;
+        Registers.H = (byte)((regValue << 1) | (Registers.CarryFlag ? 1 : 0));
+        Registers.CarryFlag = newCarry;
+        Registers.ZeroFlag = Registers.H == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void RL_L()
+    {
+        byte regValue = Registers.L;
+        bool newCarry = (regValue & 0x80) != 0;
+        Registers.L = (byte)((regValue << 1) | (Registers.CarryFlag ? 1 : 0));
+        Registers.CarryFlag = newCarry;
+        Registers.ZeroFlag = Registers.L == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void RL_A()
+    {
+        byte regValue = Registers.A;
+        bool newCarry = (regValue & 0x80) != 0;
+        Registers.A = (byte)((regValue << 1) | (Registers.CarryFlag ? 1 : 0));
+        Registers.CarryFlag = newCarry;
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void RR_B()
+    {
+        byte regValue = Registers.B;
+        bool newCarry = IsBitSet(regValue, 0);
+        Registers.B = (byte)((regValue >> 1) | (Registers.CarryFlag ? 0x80 : 0x00));
+
+        Registers.ZeroFlag = Registers.B == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Registers.CarryFlag = newCarry;
+        Cycles += 8;
+    }
 
     public static void RR_C()
     {
@@ -577,6 +898,19 @@ public class SM83
         Registers.C = (byte)((Registers.C >> 1) | (Registers.CarryFlag ? 0x80 : 0x00));
 
         Registers.ZeroFlag = Registers.C == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Registers.CarryFlag = newCarry;
+        Cycles += 8;
+    }
+    
+    public static void RR_D()
+    {
+        byte regValue = Registers.D;
+        bool newCarry = IsBitSet(regValue, 0);
+        Registers.D = (byte)((regValue >> 1) | (Registers.CarryFlag ? 0x80 : 0x00));
+
+        Registers.ZeroFlag = Registers.D == 0;
         Registers.SubtractFlag = false;
         Registers.HalfCarryFlag = false;
         Registers.CarryFlag = newCarry;
@@ -595,26 +929,307 @@ public class SM83
         Cycles += 8;
     }
     
-    public static void RR_D()
+    public static void RR_H()
     {
-        bool newCarry = (Registers.D & 0x01) != 0;
-        Registers.D = (byte)((Registers.D >> 1) | (Registers.CarryFlag ? 0x80 : 0x00));
+        byte regValue = Registers.H;
+        bool newCarry = IsBitSet(regValue, 0);
+        Registers.H = (byte)((regValue >> 1) | (Registers.CarryFlag ? 0x80 : 0x00));
 
-        Registers.ZeroFlag = Registers.D == 0;
+        Registers.ZeroFlag = Registers.H == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Registers.CarryFlag = newCarry;
+        Cycles += 8;
+    }
+    
+    public static void RR_L()
+    {
+        byte regValue = Registers.L;
+        bool newCarry = IsBitSet(regValue, 0);
+        Registers.L = (byte)((regValue >> 1) | (Registers.CarryFlag ? 0x80 : 0x00));
+
+        Registers.ZeroFlag = Registers.L == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Registers.CarryFlag = newCarry;
+        Cycles += 8;
+    }
+    
+    public static void RR_A()
+    {
+        byte regValue = Registers.A;
+        bool newCarry = IsBitSet(regValue, 0);
+        Registers.A = (byte)((regValue >> 1) | (Registers.CarryFlag ? 0x80 : 0x00));
+
+        Registers.ZeroFlag = Registers.A == 0;
         Registers.SubtractFlag = false;
         Registers.HalfCarryFlag = false;
         Registers.CarryFlag = newCarry;
         Cycles += 8;
     }
 
+    public static void SLA_B()
+    {
+        byte regValue = Registers.B;
+        bool bit7 = IsBitSet(regValue, 7);
+        Registers.B = (byte)(regValue << 1);
+        Registers.CarryFlag = bit7;
+        Registers.ZeroFlag = Registers.B == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SLA_C()
+    {
+        byte regValue = Registers.C;
+        bool bit7 = IsBitSet(regValue, 7);
+        Registers.C = (byte)(regValue << 1);
+        Registers.CarryFlag = bit7;
+        Registers.ZeroFlag = Registers.C == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SLA_D()
+    {
+        byte regValue = Registers.D;
+        bool bit7 = IsBitSet(regValue, 7);
+        Registers.D = (byte)(regValue << 1);
+        Registers.CarryFlag = bit7;
+        Registers.ZeroFlag = Registers.D == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SLA_E()
+    {
+        byte regValue = Registers.E;
+        bool bit7 = IsBitSet(regValue, 7);
+        Registers.E = (byte)(regValue << 1);
+        Registers.CarryFlag = bit7;
+        Registers.ZeroFlag = Registers.E == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SLA_H()
+    {
+        byte regValue = Registers.H;
+        bool bit7 = IsBitSet(regValue, 7);
+        Registers.H = (byte)(regValue << 1);
+        Registers.CarryFlag = bit7;
+        Registers.ZeroFlag = Registers.H == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SLA_L()
+    {
+        byte regValue = Registers.L;
+        bool bit7 = IsBitSet(regValue, 7);
+        Registers.L = (byte)(regValue << 1);
+        Registers.CarryFlag = bit7;
+        Registers.ZeroFlag = Registers.L == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SRA_B()
+    {
+        byte regValue = Registers.B;
+        bool bit0 = IsBitSet(regValue, 0);
+        bool bit7 = IsBitSet(regValue, 7);
+        Registers.B = (byte)((regValue >> 1) | (bit7 ? 0x80 : 0x00));
+        Registers.CarryFlag = bit0;
+        Registers.ZeroFlag = Registers.B == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SRA_C()
+    {
+        byte regValue = Registers.C;
+        bool bit0 = IsBitSet(regValue, 0);
+        bool bit7 = IsBitSet(regValue, 7);
+        Registers.C = (byte)((regValue >> 1) | (bit7 ? 0x80 : 0x00));
+        Registers.CarryFlag = bit0;
+        Registers.ZeroFlag = Registers.C == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SRA_D()
+    {
+        byte regValue = Registers.D;
+        bool bit0 = IsBitSet(regValue, 0);
+        bool bit7 = IsBitSet(regValue, 7);
+        Registers.D = (byte)((regValue >> 1) | (bit7 ? 0x80 : 0x00));
+        Registers.CarryFlag = bit0;
+        Registers.ZeroFlag = Registers.D == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SRA_E()
+    {
+        byte regValue = Registers.E;
+        bool bit0 = IsBitSet(regValue, 0);
+        bool bit7 = IsBitSet(regValue, 7);
+        Registers.E = (byte)((regValue >> 1) | (bit7 ? 0x80 : 0x00));
+        Registers.CarryFlag = bit0;
+        Registers.ZeroFlag = Registers.E == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SRA_H()
+    {
+        byte regValue = Registers.H;
+        bool bit0 = IsBitSet(regValue, 0);
+        bool bit7 = IsBitSet(regValue, 7);
+        Registers.H = (byte)((regValue >> 1) | (bit7 ? 0x80 : 0x00));
+        Registers.CarryFlag = bit0;
+        Registers.ZeroFlag = Registers.H == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SRA_L()
+    {
+        byte regValue = Registers.L;
+        bool bit0 = IsBitSet(regValue, 0);
+        bool bit7 = IsBitSet(regValue, 7);
+        Registers.L = (byte)((regValue >> 1) | (bit7 ? 0x80 : 0x00));
+        Registers.CarryFlag = bit0;
+        Registers.ZeroFlag = Registers.L == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SRA_A()
+    {
+        byte regValue = Registers.A;
+        bool bit0 = IsBitSet(regValue, 0);
+        bool bit7 = IsBitSet(regValue, 7);
+        Registers.A = (byte)((regValue >> 1) | (bit7 ? 0x80 : 0x00));
+        Registers.CarryFlag = bit0;
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SWAP_B()
+    {
+        byte regValue = Registers.B;
+        byte hi = (byte)(regValue >> 4);
+        byte lo = (byte)(regValue & 0x0F);
+
+        Registers.B = (byte)((lo << 4) | hi);
+
+        Registers.ZeroFlag = Registers.B == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Registers.CarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SWAP_C()
+    {
+        byte regValue = Registers.C;
+        byte hi = (byte)(regValue >> 4);
+        byte lo = (byte)(regValue & 0x0F);
+
+        Registers.C = (byte)((lo << 4) | hi);
+
+        Registers.ZeroFlag = Registers.C == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Registers.CarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SWAP_D()
+    {
+        byte regValue = Registers.D;
+        byte hi = (byte)(regValue >> 4);
+        byte lo = (byte)(regValue & 0x0F);
+
+        Registers.D = (byte)((lo << 4) | hi);
+
+        Registers.ZeroFlag = Registers.D == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Registers.CarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SWAP_E()
+    {
+        byte regValue = Registers.E;
+        byte hi = (byte)(regValue >> 4);
+        byte lo = (byte)(regValue & 0x0F);
+
+        Registers.E = (byte)((lo << 4) | hi);
+
+        Registers.ZeroFlag = Registers.E == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Registers.CarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SWAP_H()
+    {
+        byte regValue = Registers.H;
+        byte hi = (byte)(regValue >> 4);
+        byte lo = (byte)(regValue & 0x0F);
+
+        Registers.H = (byte)((lo << 4) | hi);
+
+        Registers.ZeroFlag = Registers.H == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Registers.CarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SWAP_L()
+    {
+        byte regValue = Registers.L;
+        byte hi = (byte)(regValue >> 4);
+        byte lo = (byte)(regValue & 0x0F);
+
+        Registers.L = (byte)((lo << 4) | hi);
+
+        Registers.ZeroFlag = Registers.L == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Registers.CarryFlag = false;
+        Cycles += 8;
+    }
+    
     public static void SWAP_A()
     {
-        byte hi = (byte)(Registers.A >> 4);
-        byte lo = (byte)(Registers.A & 0x0F);
+        byte regValue = Registers.A;
+        byte hi = (byte)(regValue >> 4);
+        byte lo = (byte)(regValue & 0x0F);
 
         Registers.A = (byte)((lo << 4) | hi);
 
-        if (Registers.A == 0) Registers.ZeroFlag = true;
+        Registers.ZeroFlag = Registers.A == 0;
         Registers.SubtractFlag = false;
         Registers.HalfCarryFlag = false;
         Registers.CarryFlag = false;
@@ -650,9 +1265,65 @@ public class SM83
 
     public static void SRL_B()
     {
-        Registers.CarryFlag = (Registers.B & 0x01) != 0;
-        Registers.B = (byte)(Registers.B >> 1);
+        byte regValue = Registers.B;
+        Registers.CarryFlag = (regValue & 0x01) != 0;
+        Registers.B = (byte)(regValue >> 1);
         Registers.ZeroFlag = Registers.B == 0;
+        Registers.HalfCarryFlag = false;
+        Registers.SubtractFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SRL_C()
+    {
+        byte regValue = Registers.C;
+        Registers.CarryFlag = (regValue & 0x01) != 0;
+        Registers.C = (byte)(regValue >> 1);
+        Registers.ZeroFlag = Registers.C == 0;
+        Registers.HalfCarryFlag = false;
+        Registers.SubtractFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SRL_D()
+    {
+        byte regValue = Registers.D;
+        Registers.CarryFlag = (regValue & 0x01) != 0;
+        Registers.D = (byte)(regValue >> 1);
+        Registers.ZeroFlag = Registers.D == 0;
+        Registers.HalfCarryFlag = false;
+        Registers.SubtractFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SRL_E()
+    {
+        byte regValue = Registers.E;
+        Registers.CarryFlag = (regValue & 0x01) != 0;
+        Registers.E = (byte)(regValue >> 1);
+        Registers.ZeroFlag = Registers.E == 0;
+        Registers.HalfCarryFlag = false;
+        Registers.SubtractFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SRL_H()
+    {
+        byte regValue = Registers.H;
+        Registers.CarryFlag = (regValue & 0x01) != 0;
+        Registers.H = (byte)(regValue >> 1);
+        Registers.ZeroFlag = Registers.H == 0;
+        Registers.HalfCarryFlag = false;
+        Registers.SubtractFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SRL_L()
+    {
+        byte regValue = Registers.L;
+        Registers.CarryFlag = (regValue & 0x01) != 0;
+        Registers.L = (byte)(regValue >> 1);
+        Registers.ZeroFlag = Registers.L == 0;
         Registers.HalfCarryFlag = false;
         Registers.SubtractFlag = false;
         Cycles += 8;
@@ -663,6 +1334,8 @@ public class SM83
         Registers.CarryFlag = (Registers.A & 0x01) != 0;
         Registers.A = (byte)(Registers.A >> 1);
         Registers.ZeroFlag = Registers.A == 0;
+        Registers.HalfCarryFlag = false;
+        Registers.SubtractFlag = false;
         Cycles += 8;
     }
 
@@ -738,6 +1411,17 @@ public class SM83
         Cycles += 4;
     }
 
+    public static void RRCA()
+    {
+        bool bit0 = IsBitSet(Registers.A, 0);
+        Registers.A = (byte)((Registers.A >> 1) | (bit0 ? 0x80 : 0x00));
+        Registers.CarryFlag = bit0;
+        Registers.ZeroFlag = false;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 4;
+    }
+
     public static void RRA()
     {
         bool newCarry = (Registers.A & 0x01) != 0;
@@ -756,6 +1440,8 @@ public class SM83
         Registers.A = (byte)((Registers.A << 1) | (Registers.CarryFlag ? 1 : 0));
         Registers.CarryFlag = newCarry;
         Registers.ZeroFlag = false;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
         Cycles += 4;
     }
     
@@ -840,9 +1526,64 @@ public class SM83
         Cycles += 4;
     }
     
+    public static void AND_A_B()
+    {
+        byte regValue = Registers.B;
+        Registers.A = (byte)(Registers.A & regValue);
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = false;
+        Registers.CarryFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 4;
+    }
+    
     public static void AND_A_C()
     {
         Registers.A = (byte)(Registers.A & Registers.C);
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = false;
+        Registers.CarryFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 4;
+    }
+    
+    public static void AND_A_D()
+    {
+        byte regValue = Registers.D;
+        Registers.A = (byte)(Registers.A & regValue);
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = false;
+        Registers.CarryFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 4;
+    }
+    
+    public static void AND_A_E()
+    {
+        byte regValue = Registers.E;
+        Registers.A = (byte)(Registers.A & regValue);
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = false;
+        Registers.CarryFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 4;
+    }
+    
+    public static void AND_A_H()
+    {
+        byte regValue = Registers.H;
+        Registers.A = (byte)(Registers.A & regValue);
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = false;
+        Registers.CarryFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 4;
+    }
+    
+    public static void AND_A_L()
+    {
+        byte regValue = Registers.L;
+        Registers.A = (byte)(Registers.A & regValue);
         Registers.ZeroFlag = Registers.A == 0;
         Registers.SubtractFlag = false;
         Registers.CarryFlag = false;
@@ -917,7 +1658,7 @@ public class SM83
     
     public static void ADC_A_A()
     {
-        byte value = Registers.B;
+        byte value = Registers.A;
         int carry = Registers.CarryFlag ? 1 : 0;
         byte oldA = Registers.A;
         int result = Registers.A + value + carry;
@@ -1183,6 +1924,96 @@ public class SM83
         Registers.A = (byte)result;
         Cycles += 8;
     }
+    
+    public static void SBC_A_C()
+    {
+        byte value = Registers.C;
+        int carry = Registers.CarryFlag ? 1 : 0;
+
+        int result = Registers.A - value - carry;
+
+        Registers.ZeroFlag = ((byte)result) == 0;
+        Registers.SubtractFlag = true;
+        Registers.HalfCarryFlag = ((Registers.A & 0x0F) - (value & 0x0F) - carry) < 0;
+        Registers.CarryFlag = result < 0;
+
+        Registers.A = (byte)result;
+        Cycles += 8;
+    }
+    
+    public static void SBC_A_D()
+    {
+        byte value = Registers.D;
+        int carry = Registers.CarryFlag ? 1 : 0;
+
+        int result = Registers.A - value - carry;
+
+        Registers.ZeroFlag = ((byte)result) == 0;
+        Registers.SubtractFlag = true;
+        Registers.HalfCarryFlag = ((Registers.A & 0x0F) - (value & 0x0F) - carry) < 0;
+        Registers.CarryFlag = result < 0;
+
+        Registers.A = (byte)result;
+        Cycles += 8;
+    }
+    
+    public static void SBC_A_E()
+    {
+        byte value = Registers.E;
+        int carry = Registers.CarryFlag ? 1 : 0;
+
+        int result = Registers.A - value - carry;
+
+        Registers.ZeroFlag = ((byte)result) == 0;
+        Registers.SubtractFlag = true;
+        Registers.HalfCarryFlag = ((Registers.A & 0x0F) - (value & 0x0F) - carry) < 0;
+        Registers.CarryFlag = result < 0;
+
+        Registers.A = (byte)result;
+        Cycles += 8;
+    }
+    
+    public static void SBC_A_H()
+    {
+        byte value = Registers.H;
+        int carry = Registers.CarryFlag ? 1 : 0;
+
+        int result = Registers.A - value - carry;
+
+        Registers.ZeroFlag = ((byte)result) == 0;
+        Registers.SubtractFlag = true;
+        Registers.HalfCarryFlag = ((Registers.A & 0x0F) - (value & 0x0F) - carry) < 0;
+        Registers.CarryFlag = result < 0;
+
+        Registers.A = (byte)result;
+        Cycles += 8;
+    }
+    
+    public static void SBC_A_L()
+    {
+        byte value = Registers.L;
+        int carry = Registers.CarryFlag ? 1 : 0;
+
+        int result = Registers.A - value - carry;
+
+        Registers.ZeroFlag = ((byte)result) == 0;
+        Registers.SubtractFlag = true;
+        Registers.HalfCarryFlag = ((Registers.A & 0x0F) - (value & 0x0F) - carry) < 0;
+        Registers.CarryFlag = result < 0;
+
+        Registers.A = (byte)result;
+        Cycles += 8;
+    }
+    
+    public static void SBC_A_A()
+    {
+        Registers.ZeroFlag = !Registers.CarryFlag;
+        Registers.SubtractFlag = true;
+        Registers.HalfCarryFlag = Registers.CarryFlag;
+
+        Registers.A = (byte)(Registers.CarryFlag ? 0xFF : 0x00);
+        Cycles += 8;
+    }
 
     public static void SUB_d8()
     {
@@ -1215,6 +2046,64 @@ public class SM83
         Registers.SubtractFlag = true;
         Registers.HalfCarryFlag = CheckHalfCarry_Sub8(oldA, Registers.C);
         Registers.CarryFlag = oldA < Registers.C;
+        Cycles += 4;
+    }
+    
+    public static void SUB_A_D()
+    {
+        byte regValue = Registers.D;
+        byte oldA = Registers.A;
+        Registers.A -= regValue;
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = true;
+        Registers.HalfCarryFlag = CheckHalfCarry_Sub8(oldA, regValue);
+        Registers.CarryFlag = oldA < regValue;
+        Cycles += 4;
+    }
+    
+    public static void SUB_A_E()
+    {
+        byte regValue = Registers.E;
+        byte oldA = Registers.A;
+        Registers.A -= regValue;
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = true;
+        Registers.HalfCarryFlag = CheckHalfCarry_Sub8(oldA, regValue);
+        Registers.CarryFlag = oldA < regValue;
+        Cycles += 4;
+    }
+    
+    public static void SUB_A_H()
+    {
+        byte regValue = Registers.H;
+        byte oldA = Registers.A;
+        Registers.A -= regValue;
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = true;
+        Registers.HalfCarryFlag = CheckHalfCarry_Sub8(oldA, regValue);
+        Registers.CarryFlag = oldA < regValue;
+        Cycles += 4;
+    }
+    
+    public static void SUB_A_L()
+    {
+        byte regValue = Registers.L;
+        byte oldA = Registers.A;
+        Registers.A -= regValue;
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = true;
+        Registers.HalfCarryFlag = CheckHalfCarry_Sub8(oldA, regValue);
+        Registers.CarryFlag = oldA < regValue;
+        Cycles += 4;
+    }
+    
+    public static void SUB_A_A()
+    {
+        Registers.A = 0;
+        Registers.ZeroFlag = true;
+        Registers.SubtractFlag = true;
+        Registers.HalfCarryFlag = false;
+        Registers.CarryFlag = false;
         Cycles += 4;
     }
 
@@ -1797,9 +2686,53 @@ public class SM83
         Cycles += 4;
     }
     
+    public static void XOR_A_B()
+    {
+        byte regValue = Registers.B;
+        Registers.A = (byte)(Registers.A ^ regValue); 
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = false;
+        Registers.CarryFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 4;
+    }
+    
     public static void XORA_C()
     {
-        Registers.A = (byte)(Registers.A ^ Registers.C); // Since A ^ A is always 0
+        Registers.A = (byte)(Registers.A ^ Registers.C);
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = false;
+        Registers.CarryFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 4;
+    }
+    
+    public static void XOR_A_D()
+    {
+        byte regValue = Registers.D;
+        Registers.A = (byte)(Registers.A ^ regValue); 
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = false;
+        Registers.CarryFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 4;
+    }
+    
+    public static void XOR_A_E()
+    {
+        byte regValue = Registers.E;
+        Registers.A = (byte)(Registers.A ^ regValue); 
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = false;
+        Registers.CarryFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 4;
+    }
+    
+    public static void XOR_A_H()
+    {
+        byte regValue = Registers.H;
+        Registers.A = (byte)(Registers.A ^ regValue); 
         Registers.ZeroFlag = Registers.A == 0;
         Registers.SubtractFlag = false;
         Registers.CarryFlag = false;
