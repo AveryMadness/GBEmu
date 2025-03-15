@@ -48,9 +48,11 @@ public class Program
         Ppu = new PPU();
         InputController inputController = new InputController();
 
+        APU apu = new APU();
+
         byte[] bootRom = File.ReadAllBytes("dmg_boot.bin");
 
-        MemoryBus memoryBus = new MemoryBus(bootRom, cartridge, Ppu, inputController);
+        MemoryBus memoryBus = new MemoryBus(bootRom, cartridge, Ppu, inputController, apu);
         Ppu.SetMemoryBus(memoryBus);
         
         window = new RenderWindow(new VideoMode(160, 144), "GBEmu");
