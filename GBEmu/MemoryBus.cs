@@ -7,14 +7,16 @@ public class MemoryBus
     private byte[] bootRom;
     private PPU ppu;
     private InputController input;
+    private APU apu;
     public bool useBootRom = true;
 
-    public MemoryBus(byte[] bootRom, Cartridge cart, PPU ppu, InputController input)
+    public MemoryBus(byte[] bootRom, Cartridge cart, PPU ppu, InputController input, APU apu)
     {
         this.bootRom = bootRom;
         this.cartridge = cart;
         this.ppu = ppu;
         this.input = input;
+        this.apu = apu;
     }
 
     public ushort ReadWord(ushort address)
@@ -129,6 +131,9 @@ public class MemoryBus
         {
             case 0xFF00: // Joypad input
                 return input.Read();
+            
+            case >= 0xFF10 and <= 0xFF3F:
+                return apu.ReadRegister(address);
 
             case >= 0xFF40 and <= 0xFF4F: // GPU Registers
                 return ppu.ReadRegister(address);
@@ -144,6 +149,10 @@ public class MemoryBus
         {
             case 0xFF00: // Joypad input
                 input.Write(value);
+                break;
+            
+            case >= 0xFF10 and <= 0xFF3F:
+                apu.WriteRegister(address, value);
                 break;
 
             case >= 0xFF40 and <= 0xFF4F: // GPU Registers
