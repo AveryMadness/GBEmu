@@ -2,12 +2,42 @@
 
 using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 using Image = SFML.Graphics.Image;
 
 namespace GBEmu;
+
+[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+public struct OpenFileName
+{
+    public int lStructSize;
+    public IntPtr hwndOwner;
+    public IntPtr hInstance;
+    public string lpstrFilter;
+    public string lpstrCustomFilter;
+    public int nMaxCustFilter;
+    public int nFilterIndex;
+    public string lpstrFile;
+    public int nMaxFile;
+    public string lpstrFileTitle;
+    public int nMaxFileTitle;
+    public string lpstrInitialDir;
+    public string lpstrTitle;
+    public int Flags;
+    public short nFileOffset;
+    public short nFileExtension;
+    public string lpstrDefExt;
+    public IntPtr lCustData;
+    public IntPtr lpfnHook;
+    public string lpTemplateName;
+    public IntPtr pvReserved;
+    public int dwReserved;
+    public int flagsEx;
+}
+
 
 public class Program
 {
@@ -23,6 +53,24 @@ public class Program
 
     public const bool UseGameboyDoctor = false;
     public const bool SkipBoot = true;
+    
+    [DllImport("comdlg32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+    private static extern bool GetOpenFileName(ref OpenFileName ofn);
+
+    private static string ShowDialog()
+    {
+        var ofn = new OpenFileName();
+        ofn.lStructSize = Marshal.SizeOf(ofn);
+        ofn.lpstrFilter = "GameBoy ROMS (*.gb)\0*.gb\0All Files (*.*)\0*.*\0";
+        ofn.lpstrFile = new string(new char[256]);
+        ofn.nMaxFile = ofn.lpstrFile.Length;
+        ofn.lpstrFileTitle = new string(new char[64]);
+        ofn.nMaxFileTitle = ofn.lpstrFileTitle.Length;
+        ofn.lpstrTitle = "Open File Dialog...";
+        if (GetOpenFileName(ref ofn))
+            return ofn.lpstrFile;
+        return string.Empty;
+    }
 
     public static void Main(string[] args)
     {
@@ -31,7 +79,8 @@ public class Program
     
     public static async void MainAsync(string[] args)
     {
-        FileStream fileStream = new FileStream("cpu_instrs.gb", FileMode.Open);
+        string fileName = ShowDialog();
+        FileStream fileStream = new FileStream(fileName, FileMode.Open);
         
         fileStream.Seek(0x147, SeekOrigin.Begin);
         byte[] cartTypeBuffer = new byte[1]; 
@@ -44,13 +93,13 @@ public class Program
         fileStream.Flush();
         fileStream.Close();
 
-        Cartridge cartridge = new Cartridge(File.ReadAllBytes("cpu_instrs.gb"), cartridgeType);
+        Cartridge cartridge = new Cartridge(File.ReadAllBytes(fileName), cartridgeType);
         Ppu = new PPU();
         InputController inputController = new InputController();
 
         APU apu = new APU();
 
-        byte[] bootRom = File.ReadAllBytes("dmg_boot.bin");
+        byte[] bootRom = File.ReadAllBytes(AppDomain.CurrentDomain.BaseDirectory + "/dmg_boot.bin");
 
         MemoryBus memoryBus = new MemoryBus(bootRom, cartridge, Ppu, inputController, apu);
         Ppu.SetMemoryBus(memoryBus);

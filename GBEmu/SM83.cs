@@ -19,6 +19,7 @@ public class SM83
         {0x0B, RRC_E},
         {0x0C, RRC_H},
         {0x0D, RRC_L},
+        {0x0E, RRC_vHL},
         {0x0F, RRC_A},
         {0x10, RL_B},
         {0x11, RL_C},
@@ -62,6 +63,10 @@ public class SM83
         {0x3C, SRL_H},
         {0x3D, SRL_L},
         {0x3F, SRL_A},
+        {0x46, BIT_0_vHL},
+        {0x6C, BIT_5_H},
+        {0x79, BIT_7_C},
+        {0x7D, BIT_7_L},
         {0x7C, BIT_7_H},
         {0x87, RES_0_A},
         {0x7F, BIT_7_A},
@@ -559,6 +564,16 @@ public class SM83
         Cycles += 8;
     }
     
+    public static void BIT_5_H()
+    {
+        byte register = Registers.H;
+        bool bitSet = IsBitSet(register, 5);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
     public static void BIT_6_B()
     {
         byte register = Registers.B;
@@ -589,6 +604,17 @@ public class SM83
         Cycles += 8;
     }
     
+    public static void BIT_0_vHL()
+    {
+        ushort address = Registers.HL;
+        byte register = MemoryBus.ReadByte(address);
+        bool bitSet = IsBitSet(register, 0);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 12;
+    }
+    
     public static void BIT_0_A()
     {
         byte register = Registers.A;
@@ -612,6 +638,26 @@ public class SM83
     public static void BIT_7_E()
     {
         byte register = Registers.E;
+        bool bitSet = IsBitSet(register, 7);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_7_L()
+    {
+        byte register = Registers.L;
+        bool bitSet = IsBitSet(register, 7);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_7_C()
+    {
+        byte register = Registers.C;
         bool bitSet = IsBitSet(register, 7);
         Registers.ZeroFlag = !bitSet;
         Registers.SubtractFlag = false;
@@ -715,6 +761,19 @@ public class SM83
     public static void RRC_B()
     {
         byte regValue = Registers.B;
+        bool bit0 = IsBitSet(regValue, 0);
+        Registers.B = (byte)((regValue >> 1) | (bit0 ? 0x80 : 0x00));
+        Registers.CarryFlag = bit0;
+        Registers.ZeroFlag = Registers.B == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 4;
+    }
+    
+    public static void RRC_vHL()
+    {
+        ushort address = Registers.HL;
+        byte regValue = MemoryBus.ReadByte(address);
         bool bit0 = IsBitSet(regValue, 0);
         Registers.B = (byte)((regValue >> 1) | (bit0 ? 0x80 : 0x00));
         Registers.CarryFlag = bit0;

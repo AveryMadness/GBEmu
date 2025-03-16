@@ -126,7 +126,7 @@ public class Cartridge
 
         if (romData.Length > romSize)
         {
-            throw new Exception("ROM size is too large for cartridge type!");
+            //throw new Exception("ROM size is too large for cartridge type!");
         }
 
         rom = romData;
