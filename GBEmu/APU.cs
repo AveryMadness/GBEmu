@@ -5,39 +5,39 @@ public class APU
     #region Sound Registers
 
     #region Square 1
-    private byte NR10; //$FF10
-    private byte NR11; //$FF11
-    private byte NR12; //$FF12
-    private byte NR13; //$FF13
-    private byte NR14; //$FF14
+    private byte NR10 = 0x80; //$FF10
+    private byte NR11 = 0xBF; //$FF11
+    private byte NR12 = 0xF3; //$FF12
+    private byte NR13 = 0xFF; //$FF13
+    private byte NR14 = 0xBF; //$FF14
     #endregion
     
     #region Square 2
-    private byte NR21; //$FF16
-    private byte NR22; //$FF17
-    private byte NR23; //$FF18
-    private byte NR24; //$FF19
+    private byte NR21 = 0x3F; //$FF16
+    private byte NR22 = 0x00; //$FF17
+    private byte NR23 = 0xFF; //$FF18
+    private byte NR24 = 0xBF; //$FF19
     #endregion
     
     #region Wave
-    private byte NR30; //$FF1A
-    private byte NR31; //$FF1B
-    private byte NR32; //$FF1C
-    private byte NR33; //$FF1D
-    private byte NR34; //$FF1E
+    private byte NR30 = 0x7F; //$FF1A
+    private byte NR31 = 0xFF; //$FF1B
+    private byte NR32 = 0x9F; //$FF1C
+    private byte NR33 = 0xFF; //$FF1D
+    private byte NR34 = 0xBF; //$FF1E
     #endregion
     
     #region Noise
-    private byte NR41; //$FF20
-    private byte NR42; //$FF21
-    private byte NR43; //$FF22
-    private byte NR44; //$FF23
+    private byte NR41 = 0xFF; //$FF20
+    private byte NR42 = 0x00; //$FF21
+    private byte NR43 = 0x00; //$FF22
+    private byte NR44 = 0xBF; //$FF23
     #endregion
     
     #region Control/Status
-    private byte NR50; //$FF24
-    private byte NR51; //$FF25
-    private byte NR52; //$FF26
+    private byte NR50 = 0x77; //$FF24
+    private byte NR51 = 0xF3; //$FF25
+    private byte NR52 = 0xF1; //$FF26
     #endregion
     
     #region Wave pattern RAM
@@ -47,6 +47,129 @@ public class APU
     #endregion
 
     #endregion
+    
+    #region Wave Duty
+
+    private List<byte> WaveDutyTable = new List<byte>
+    {
+        0b00000001, //12.5%
+        0b00000011, //25%
+        0b00001111, //50%
+        0b11111100, //75%
+    };
+    #endregion
+    
+    #region Non-Register Variables
+
+    private List<int> waveDutyPositions = [];
+    private List<bool> channelsEnabled = [];
+    private List<float> channelVolume = [];
+    private List<int> frequencyTimer = [];
+    private List<int> lengthTimer = [];
+    #endregion
+
+    private int cycleCount = 0;
+
+    //called every T-Cycle, (4 M-Cycles)
+    public void Step()
+    {
+        cycleCount++;
+
+        if (channelsEnabled[2])
+        {
+            StepChannel2();
+        }
+    }
+
+    private int frameSequencerStep = 0;
+    private void StepFrameSequencer()
+    {
+        if (frameSequencerStep == 0)
+        {
+            
+        }
+        
+        
+        frameSequencerStep++;
+
+        if (frameSequencerStep > 7)
+            frameSequencerStep = 0;
+    }
+
+    private void StepChannel2Length()
+    {
+        if (GetChannelLengthEnabled(NR24))
+        {
+            lengthTimer[2]--;
+
+            if (lengthTimer[2] <= 0)
+            {
+                channelsEnabled[2] = false;
+            }
+        }
+    }
+
+    private void TriggerChannel2()
+    {
+        channelsEnabled[2] = true;
+
+        if (lengthTimer[2] <= 0)
+        {
+            lengthTimer[2] = GetChannelInitialLengthTimer(NR21);
+        }
+        
+        ushort frequency = GetChannelFrequency(NR23, NR24);
+        frequencyTimer[2] = (2048 - frequency) * 4;
+
+        waveDutyPositions[2] = 0;
+        
+        int initialVolume = GetChannelInitialVolume(NR22);
+
+        if (initialVolume == 0)
+            channelsEnabled[2] = false;
+        
+        channelVolume[2] = initialVolume;
+    }
+
+    private void StepChannel2()
+    {
+        int waveDuty = (NR21 >> 6) & 0b11;
+        
+        frequencyTimer[2]--;
+
+        if (frequencyTimer[2] <= 0)
+        {
+            waveDutyPositions[2] = (waveDutyPositions[2] + 1) % 8;
+
+            ushort frequency = GetChannelFrequency(NR23, NR24);
+            frequencyTimer[2] = (2048 - frequency) * 4;
+        }
+        
+        bool outputHigh = ((WaveDutyTable[waveDuty] >> (7 - waveDutyPositions[2])) & 1) != 0;
+        //call func to output sound
+    }
+    
+    private ushort GetChannelFrequency(byte NRx3Reg, byte NRx4Reg)
+    {
+        byte low = NRx3Reg;  
+        byte high = NRx4Reg;
+        return (ushort)(((high & 0b00000111) << 8) | low);
+    }
+
+    private byte GetChannelInitialVolume(byte NRx2Reg)
+    {
+        return (byte)(NRx2Reg & 0b11110000);
+    }
+
+    private byte GetChannelInitialLengthTimer(byte NRx1Reg)
+    {
+        return (byte)(64 - (NRx1Reg & 0b00111111));
+    }
+
+    private bool GetChannelLengthEnabled(byte NRx4Reg)
+    {
+        return (NRx4Reg & 0b01000000) != 0;
+    }
 
     public void WriteRegister(ushort address, byte value)
     {
