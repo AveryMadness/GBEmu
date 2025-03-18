@@ -4,6 +4,7 @@ namespace GBEmu;
 
 public class SM83
 {
+    #region Prefix Map
     public static Dictionary<byte, Action> PrefixInstructionMap = new Dictionary<byte, Action>
     {
         {0x00, RLC_B},
@@ -12,6 +13,7 @@ public class SM83
         {0x03, RLC_E},
         {0x04, RLC_H},
         {0x05, RLC_L},
+        {0x06, RLC_vHL},
         {0x07, RLC_A},
         {0x08, RRC_B},
         {0x09, RRC_C},
@@ -27,6 +29,7 @@ public class SM83
         {0x13, RL_E},
         {0x14, RL_H},
         {0x15, RL_L},
+        {0x16, RL_vHL},
         {0x17, RL_A},
         {0x18, RR_B},
         {0x19, RR_C},
@@ -34,6 +37,7 @@ public class SM83
         {0x1B, RR_E},
         {0x1C, RR_H},
         {0x1D, RR_L},
+        {0x1E, RR_vHL},
         {0x1F, RR_A},
         {0x20, SLA_B},
         {0x21, SLA_C},
@@ -41,6 +45,7 @@ public class SM83
         {0x23, SLA_E},
         {0x24, SLA_H},
         {0x25, SLA_L},
+        {0x26, SLA_vHL},
         {0x27, SLA_A},
         {0x28, SRA_B},
         {0x29, SRA_C},
@@ -48,6 +53,7 @@ public class SM83
         {0x2B, SRA_E},
         {0x2C, SRA_H},
         {0x2D, SRA_L},
+        {0x2E, SRA_vHL},
         {0x2F, SRA_A},
         {0x30, SWAP_B},
         {0x31, SWAP_C},
@@ -55,6 +61,7 @@ public class SM83
         {0x33, SWAP_E},
         {0x34, SWAP_H},
         {0x35, SWAP_L},
+        {0x36, SWAP_vHL},
         {0x37, SWAP_A},
         {0x38, SRL_B},
         {0x39, SRL_C},
@@ -62,6 +69,7 @@ public class SM83
         {0x3B, SRL_E},
         {0x3C, SRL_H},
         {0x3D, SRL_L},
+        {0x3E, SRL_vHL},
         {0x3F, SRL_A},
         {0x40, BIT_0_B},
         {0x41, BIT_0_C},
@@ -93,24 +101,156 @@ public class SM83
         {0x5D, BIT_3_L},
         {0x5F, BIT_3_A},
         {0x60, BIT_4_B},
+        {0x61, BIT_4_C},
+        {0x62, BIT_4_D},
+        {0x63, BIT_4_E},
+        {0x64, BIT_4_H},
+        {0x65, BIT_4_L},
+        {0x67, BIT_4_A},
         {0x68, BIT_5_B},
+        {0x69, BIT_5_C},
+        {0x6A, BIT_5_D},
+        {0x6B, BIT_5_E},
         {0x6C, BIT_5_H},
+        {0x6D, BIT_5_L},
+        {0x6F, BIT_5_A},
         {0x70, BIT_6_B},
+        {0x71, BIT_6_C},
+        {0x72, BIT_6_D},
+        {0x73, BIT_6_E},
+        {0x74, BIT_6_H},
+        {0x75, BIT_6_L},
+        {0x77, BIT_6_A},
         {0x78, BIT_7_B},
         {0x79, BIT_7_C},
+        {0x7A, BIT_7_D},
         {0x7B, BIT_7_E},
         {0x7C, BIT_7_H},
         {0x7D, BIT_7_L},
         {0x7E, BIT_7_vHL},
         {0x7F, BIT_7_A},
+        {0x80, RES_0_B},
+        {0x81, RES_0_C},
+        {0x82, RES_0_D},
+        {0x83, RES_0_E},
+        {0x84, RES_0_H},
+        {0x85, RES_0_L},
         {0x86, RES_0_VHL},
         {0x87, RES_0_A},
+        {0x88, RES_1_B},
+        {0x89, RES_1_C},
+        {0x8A, RES_1_D},
+        {0x8B, RES_1_E},
+        {0x8C, RES_1_H},
+        {0x8D, RES_1_L},
+        {0x8F, RES_1_A},
+        {0x90, RES_2_B},
+        {0x91, RES_2_C},
+        {0x92, RES_2_D},
+        {0x93, RES_2_E},
+        {0x94, RES_2_H},
+        {0x95, RES_2_L},
+        {0x97, RES_2_A},
+        {0x98, RES_3_B},
+        {0x99, RES_3_C},
+        {0x9A, RES_3_D},
+        {0x9B, RES_3_E},
+        {0x9C, RES_3_H},
+        {0x9D, RES_3_L},
+        {0x9F, RES_3_A},
+        {0xA0, RES_4_B},
+        {0xA1, RES_4_C},
+        {0xA2, RES_4_D},
+        {0xA3, RES_4_E},
+        {0xA4, RES_4_H},
+        {0xA5, RES_4_L},
+        {0xA7, RES_4_A},
+        {0xA8, RES_5_B},
+        {0xA9, RES_5_C},
+        {0xAA, RES_5_D},
+        {0xAB, RES_5_E},
+        {0xAC, RES_5_H},
+        {0xAD, RES_5_L},
+        {0xAF, RES_5_A},
+        {0xB0, RES_6_B},
+        {0xB1, RES_6_C},
+        {0xB2, RES_6_D},
+        {0xB3, RES_6_E},
+        {0xB4, RES_6_H},
+        {0xB5, RES_6_L},
+        {0xB7, RES_6_A},
+        {0xB8, RES_7_B},
+        {0xB9, RES_7_C},
+        {0xBA, RES_7_D},
+        {0xBB, RES_7_E},
+        {0xBC, RES_7_H},
+        {0xBD, RES_7_L},
+        {0xBF, RES_7_A},
+        {0xC0, SET_0_B},
+        {0xC1, SET_0_C},
+        {0xC2, SET_0_D},
+        {0xC3, SET_0_E},
+        {0xC4, SET_0_H},
+        {0xC5, SET_0_L},
+        {0xC7, SET_0_A},
+        {0xC8, SET_1_B},
+        {0xC9, SET_1_C},
+        {0xCA, SET_1_D},
+        {0xCB, SET_1_E},
+        {0xCC, SET_1_H},
+        {0xCD, SET_1_L},
+        {0xCF, SET_1_A},
+        {0xD0, SET_2_B},
+        {0xD1, SET_2_C},
+        {0xD2, SET_2_D},
+        {0xD3, SET_2_E},
+        {0xD4, SET_2_H},
+        {0xD5, SET_2_L},
+        {0xD7, SET_2_A},
+        {0xD8, SET_3_B},
+        {0xD9, SET_3_C},
+        {0xDA, SET_3_D},
+        {0xDB, SET_3_E},
+        {0xDC, SET_3_H},
+        {0xDD, SET_3_L},
+        {0xDF, SET_3_A},
+        {0xE0, SET_4_B},
+        {0xE1, SET_4_C},
+        {0xE2, SET_4_D},
+        {0xE3, SET_4_E},
+        {0xE4, SET_4_H},
+        {0xE5, SET_4_L},
+        {0xE7, SET_4_A},
+        {0xE8, SET_5_B},
+        {0xE9, SET_5_C},
+        {0xEA, SET_5_D},
+        {0xEB, SET_5_E},
+        {0xEC, SET_5_H},
+        {0xED, SET_5_L},
+        {0xEF, SET_5_A},
+        {0xF0, SET_6_B},
+        {0xF1, SET_6_C},
+        {0xF2, SET_6_D},
+        {0xF3, SET_6_E},
+        {0xF4, SET_6_H},
+        {0xF5, SET_6_L},
+        {0xF7, SET_6_A},
+        {0xF8, SET_7_B},
+        {0xF9, SET_7_C},
+        {0xFA, SET_7_D},
+        {0xFB, SET_7_E},
+        {0xFC, SET_7_H},
+        {0xFD, SET_7_L},
+        {0xFF, SET_7_A},
     };
- 
+    #endregion
+
+    #region Instruction Map
     public static Dictionary<byte, Action> InstructionMap = new Dictionary<byte, Action>
     {
         {0x00, NOP},
         {0x01, LD_BC_n16},
+        {0x02, LD_vBC_A},
         {0x03, INC_BC},
         {0x04, INC_B},
         {0x05, DEC_B},
@@ -250,6 +390,7 @@ public class SM83
         {0x8B, ADC_A_E},
         {0x8C, ADC_A_H},
         {0x8D, ADC_A_L},
+        {0x8E, ADC_A_vHL},
         {0x8F, ADC_A_A},
         {0x90, SUB_A_B},
         {0x91, SUB_A_C},
@@ -257,6 +398,7 @@ public class SM83
         {0x93, SUB_A_E},
         {0x94, SUB_A_H},
         {0x95, SUB_A_L},
+        {0x96, SUB_A_vHL},
         {0x97, SUB_A_A},
         {0x98, SBC_A_B},
         {0x99, SBC_A_C},
@@ -264,6 +406,7 @@ public class SM83
         {0x9B, SBC_A_E},
         {0x9C, SBC_A_H},
         {0x9D, SBC_A_L},
+        {0x9E, SBC_A_vHL},
         {0x9F, SBC_A_A},
         {0xA0, AND_A_B},
         {0xA1, AND_A_C},
@@ -271,6 +414,7 @@ public class SM83
         {0xA3, AND_A_E},
         {0xA4, AND_A_H},
         {0xA5, AND_A_L},
+        {0xA6, AND_A_vHL},
         {0xA7, AND_A},
         {0xA8, XOR_A_B},
         {0xA9, XORA_C},
@@ -351,7 +495,9 @@ public class SM83
         {0xFF, RST_38}
     };
 
-    
+    #endregion
+
+
     public static MemoryBus MemoryBus;
     public static ushort ProgramCounter = 0;
     public static int Cycles = 0;
@@ -719,9 +865,119 @@ public class SM83
         Cycles += 8;
     }
     
+    public static void BIT_4_C()
+    {
+        byte register = Registers.C;
+        bool bitSet = IsBitSet(register, 4);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_4_D()
+    {
+        byte register = Registers.D;
+        bool bitSet = IsBitSet(register, 4);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_4_E()
+    {
+        byte register = Registers.E;
+        bool bitSet = IsBitSet(register, 4);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_4_H()
+    {
+        byte register = Registers.H;
+        bool bitSet = IsBitSet(register, 4);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_4_L()
+    {
+        byte register = Registers.L;
+        bool bitSet = IsBitSet(register, 4);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_4_A()
+    {
+        byte register = Registers.A;
+        bool bitSet = IsBitSet(register, 4);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
     public static void BIT_5_B()
     {
         byte register = Registers.B;
+        bool bitSet = IsBitSet(register, 5);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_5_C()
+    {
+        byte register = Registers.C;
+        bool bitSet = IsBitSet(register, 5);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_5_D()
+    {
+        byte register = Registers.D;
+        bool bitSet = IsBitSet(register, 5);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_5_E()
+    {
+        byte register = Registers.E;
+        bool bitSet = IsBitSet(register, 5);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_5_L()
+    {
+        byte register = Registers.L;
+        bool bitSet = IsBitSet(register, 5);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_5_A()
+    {
+        byte register = Registers.A;
         bool bitSet = IsBitSet(register, 5);
         Registers.ZeroFlag = !bitSet;
         Registers.SubtractFlag = false;
@@ -742,6 +998,66 @@ public class SM83
     public static void BIT_6_B()
     {
         byte register = Registers.B;
+        bool bitSet = IsBitSet(register, 6);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_6_C()
+    {
+        byte register = Registers.C;
+        bool bitSet = IsBitSet(register, 6);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_6_D()
+    {
+        byte register = Registers.D;
+        bool bitSet = IsBitSet(register, 6);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_6_E()
+    {
+        byte register = Registers.E;
+        bool bitSet = IsBitSet(register, 6);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_6_H()
+    {
+        byte register = Registers.H;
+        bool bitSet = IsBitSet(register, 6);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_6_L()
+    {
+        byte register = Registers.L;
+        bool bitSet = IsBitSet(register, 6);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_6_A()
+    {
+        byte register = Registers.A;
         bool bitSet = IsBitSet(register, 6);
         Registers.ZeroFlag = !bitSet;
         Registers.SubtractFlag = false;
@@ -920,6 +1236,16 @@ public class SM83
         Cycles += 8;
     }
     
+    public static void BIT_7_D()
+    {
+        byte register = Registers.D;
+        bool bitSet = IsBitSet(register, 7);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
     public static void BIT_7_A()
     {
         byte register = Registers.A;
@@ -1001,6 +1327,20 @@ public class SM83
         Cycles += 8;
     }
     
+    public static void RLC_vHL()
+    {
+        ushort address = Registers.HL;
+        byte regValue = MemoryBus.ReadByte(address);
+        bool bit7 = IsBitSet(regValue, 7);
+        byte newVal = (byte)((regValue << 1) | (bit7 ? 1 : 0));
+        MemoryBus.WriteByte(address, newVal);
+        Registers.CarryFlag = bit7;
+        Registers.ZeroFlag = newVal == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 16;
+    }
+    
     public static void RLC_A()
     {
         byte regValue = Registers.A;
@@ -1030,9 +1370,10 @@ public class SM83
         ushort address = Registers.HL;
         byte regValue = MemoryBus.ReadByte(address);
         bool bit0 = IsBitSet(regValue, 0);
-        Registers.B = (byte)((regValue >> 1) | (bit0 ? 0x80 : 0x00));
+        byte newVal = (byte)((regValue >> 1) | (bit0 ? 0x80 : 0x00));
+        MemoryBus.WriteByte(address, newVal);
         Registers.CarryFlag = bit0;
-        Registers.ZeroFlag = Registers.B == 0;
+        Registers.ZeroFlag = newVal == 0;
         Registers.SubtractFlag = false;
         Registers.HalfCarryFlag = false;
         Cycles += 4;
@@ -1181,6 +1522,20 @@ public class SM83
         Cycles += 8;
     }
     
+    public static void RL_vHL()
+    {
+        ushort address = Registers.HL;
+        byte regValue = MemoryBus.ReadByte(address);
+        bool newCarry = (regValue & 0x80) != 0;
+        byte newValue = (byte)((regValue << 1) | (Registers.CarryFlag ? 1 : 0));
+        MemoryBus.WriteByte(address, newValue);
+        Registers.CarryFlag = newCarry;
+        Registers.ZeroFlag = newValue == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
     public static void RL_A()
     {
         byte regValue = Registers.A;
@@ -1263,6 +1618,22 @@ public class SM83
         Registers.L = (byte)((regValue >> 1) | (Registers.CarryFlag ? 0x80 : 0x00));
 
         Registers.ZeroFlag = Registers.L == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Registers.CarryFlag = newCarry;
+        Cycles += 8;
+    }
+    
+    public static void RR_vHL()
+    {
+        ushort address = Registers.HL;
+        byte regValue = MemoryBus.ReadByte(address);
+        bool newCarry = IsBitSet(regValue, 0);
+        byte newValue = (byte)((regValue >> 1) | (Registers.CarryFlag ? 0x80 : 0x00));
+
+        MemoryBus.WriteByte(address, newValue);
+        
+        Registers.ZeroFlag = newValue == 0;
         Registers.SubtractFlag = false;
         Registers.HalfCarryFlag = false;
         Registers.CarryFlag = newCarry;
@@ -1354,6 +1725,20 @@ public class SM83
         Cycles += 8;
     }
     
+    public static void SLA_vHL()
+    {
+        ushort address = Registers.HL;
+        byte regValue = MemoryBus.ReadByte(address);
+        bool bit7 = IsBitSet(regValue, 7);
+        byte newValue = (byte)(regValue << 1);
+        MemoryBus.WriteByte(address, newValue);
+        Registers.CarryFlag = bit7;
+        Registers.ZeroFlag = newValue == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
     public static void SRA_B()
     {
         byte regValue = Registers.B;
@@ -1427,6 +1812,21 @@ public class SM83
         Registers.L = (byte)((regValue >> 1) | (bit7 ? 0x80 : 0x00));
         Registers.CarryFlag = bit0;
         Registers.ZeroFlag = Registers.L == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SRA_vHL()
+    {
+        ushort address = Registers.HL;
+        byte regValue = MemoryBus.ReadByte(address);
+        bool bit0 = IsBitSet(regValue, 0);
+        bool bit7 = IsBitSet(regValue, 7);
+        byte newValue = (byte)((regValue >> 1) | (bit7 ? 0x80 : 0x00));
+        MemoryBus.WriteByte(address, newValue);
+        Registers.CarryFlag = bit0;
+        Registers.ZeroFlag = newValue == 0;
         Registers.SubtractFlag = false;
         Registers.HalfCarryFlag = false;
         Cycles += 8;
@@ -1535,6 +1935,23 @@ public class SM83
         Cycles += 8;
     }
     
+    public static void SWAP_vHL()
+    {
+        ushort address = Registers.HL;
+        byte regValue = MemoryBus.ReadByte(address);
+        byte hi = (byte)(regValue >> 4);
+        byte lo = (byte)(regValue & 0x0F);
+
+        byte newValue = (byte)((lo << 4) | hi);
+        MemoryBus.WriteByte(address, newValue);
+
+        Registers.ZeroFlag = newValue == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = false;
+        Registers.CarryFlag = false;
+        Cycles += 8;
+    }
+    
     public static void SWAP_A()
     {
         byte regValue = Registers.A;
@@ -1558,6 +1975,446 @@ public class SM83
         Cycles += 8;
     }
     
+    public static void RES_0_B()
+    {
+        byte value = Registers.B;
+        byte newValue = ResetBit(value, 0);
+        Registers.B = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_0_C()
+    {
+        byte value = Registers.C;
+        byte newValue = ResetBit(value, 0);
+        Registers.C = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_0_D()
+    {
+        byte value = Registers.D;
+        byte newValue = ResetBit(value, 0);
+        Registers.D = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_0_E()
+    {
+        byte value = Registers.E;
+        byte newValue = ResetBit(value, 0);
+        Registers.E = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_0_H()
+    {
+        byte value = Registers.H;
+        byte newValue = ResetBit(value, 0);
+        Registers.H = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_0_L()
+    {
+        byte value = Registers.L;
+        byte newValue = ResetBit(value, 0);
+        Registers.L = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_1_A()
+    {
+        byte value = Registers.A;
+        byte newValue = ResetBit(value, 1);
+        Registers.A = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_1_B()
+    {
+        byte value = Registers.B;
+        byte newValue = ResetBit(value, 1);
+        Registers.B = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_1_C()
+    {
+        byte value = Registers.C;
+        byte newValue = ResetBit(value, 1);
+        Registers.C = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_1_D()
+    {
+        byte value = Registers.D;
+        byte newValue = ResetBit(value, 1);
+        Registers.D = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_1_E()
+    {
+        byte value = Registers.E;
+        byte newValue = ResetBit(value, 1);
+        Registers.E = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_1_H()
+    {
+        byte value = Registers.H;
+        byte newValue = ResetBit(value, 1);
+        Registers.H = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_1_L()
+    {
+        byte value = Registers.L;
+        byte newValue = ResetBit(value, 1);
+        Registers.L = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_2_A()
+    {
+        byte value = Registers.A;
+        byte newValue = ResetBit(value, 2);
+        Registers.A = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_2_B()
+    {
+        byte value = Registers.B;
+        byte newValue = ResetBit(value, 2);
+        Registers.B = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_2_C()
+    {
+        byte value = Registers.C;
+        byte newValue = ResetBit(value, 2);
+        Registers.C = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_2_D()
+    {
+        byte value = Registers.D;
+        byte newValue = ResetBit(value, 2);
+        Registers.D = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_2_E()
+    {
+        byte value = Registers.E;
+        byte newValue = ResetBit(value, 2);
+        Registers.E = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_2_H()
+    {
+        byte value = Registers.H;
+        byte newValue = ResetBit(value, 2);
+        Registers.H = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_2_L()
+    {
+        byte value = Registers.L;
+        byte newValue = ResetBit(value, 2);
+        Registers.L = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_3_A()
+    {
+        byte value = Registers.A;
+        byte newValue = ResetBit(value, 3);
+        Registers.A = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_3_B()
+    {
+        byte value = Registers.B;
+        byte newValue = ResetBit(value, 3);
+        Registers.B = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_3_C()
+    {
+        byte value = Registers.C;
+        byte newValue = ResetBit(value, 3);
+        Registers.C = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_3_D()
+    {
+        byte value = Registers.D;
+        byte newValue = ResetBit(value, 3);
+        Registers.D = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_3_E()
+    {
+        byte value = Registers.E;
+        byte newValue = ResetBit(value, 3);
+        Registers.E = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_3_H()
+    {
+        byte value = Registers.H;
+        byte newValue = ResetBit(value, 3);
+        Registers.H = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_3_L()
+    {
+        byte value = Registers.L;
+        byte newValue = ResetBit(value, 3);
+        Registers.L = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_4_A()
+    {
+        byte value = Registers.A;
+        byte newValue = ResetBit(value, 4);
+        Registers.A = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_4_B()
+    {
+        byte value = Registers.B;
+        byte newValue = ResetBit(value, 4);
+        Registers.B = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_4_C()
+    {
+        byte value = Registers.C;
+        byte newValue = ResetBit(value, 4);
+        Registers.C = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_4_D()
+    {
+        byte value = Registers.D;
+        byte newValue = ResetBit(value, 4);
+        Registers.D = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_4_E()
+    {
+        byte value = Registers.E;
+        byte newValue = ResetBit(value, 4);
+        Registers.E = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_4_H()
+    {
+        byte value = Registers.H;
+        byte newValue = ResetBit(value, 4);
+        Registers.H = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_4_L()
+    {
+        byte value = Registers.L;
+        byte newValue = ResetBit(value, 4);
+        Registers.L = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_5_A()
+    {
+        byte value = Registers.A;
+        byte newValue = ResetBit(value, 5);
+        Registers.A = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_5_B()
+    {
+        byte value = Registers.B;
+        byte newValue = ResetBit(value, 5);
+        Registers.B = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_5_C()
+    {
+        byte value = Registers.C;
+        byte newValue = ResetBit(value, 5);
+        Registers.C = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_5_D()
+    {
+        byte value = Registers.D;
+        byte newValue = ResetBit(value, 5);
+        Registers.D = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_5_E()
+    {
+        byte value = Registers.E;
+        byte newValue = ResetBit(value, 5);
+        Registers.E = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_5_H()
+    {
+        byte value = Registers.H;
+        byte newValue = ResetBit(value, 5);
+        Registers.H = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_5_L()
+    {
+        byte value = Registers.L;
+        byte newValue = ResetBit(value, 5);
+        Registers.L = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_6_A()
+    {
+        byte value = Registers.A;
+        byte newValue = ResetBit(value, 6);
+        Registers.A = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_6_B()
+    {
+        byte value = Registers.B;
+        byte newValue = ResetBit(value, 6);
+        Registers.B = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_6_C()
+    {
+        byte value = Registers.C;
+        byte newValue = ResetBit(value, 6);
+        Registers.C = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_6_D()
+    {
+        byte value = Registers.D;
+        byte newValue = ResetBit(value, 6);
+        Registers.D = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_6_E()
+    {
+        byte value = Registers.E;
+        byte newValue = ResetBit(value, 6);
+        Registers.E = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_6_H()
+    {
+        byte value = Registers.H;
+        byte newValue = ResetBit(value, 6);
+        Registers.H = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_6_L()
+    {
+        byte value = Registers.L;
+        byte newValue = ResetBit(value, 6);
+        Registers.L = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_7_A()
+    {
+        byte value = Registers.A;
+        byte newValue = ResetBit(value, 7);
+        Registers.A = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_7_B()
+    {
+        byte value = Registers.B;
+        byte newValue = ResetBit(value, 7);
+        Registers.B = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_7_C()
+    {
+        byte value = Registers.C;
+        byte newValue = ResetBit(value, 7);
+        Registers.C = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_7_D()
+    {
+        byte value = Registers.D;
+        byte newValue = ResetBit(value, 7);
+        Registers.D = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_7_E()
+    {
+        byte value = Registers.E;
+        byte newValue = ResetBit(value, 7);
+        Registers.E = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_7_H()
+    {
+        byte value = Registers.H;
+        byte newValue = ResetBit(value, 7);
+        Registers.H = newValue;
+        Cycles += 8;
+    }
+    
+    public static void RES_7_L()
+    {
+        byte value = Registers.L;
+        byte newValue = ResetBit(value, 7);
+        Registers.L = newValue;
+        Cycles += 8;
+    }
+    
     public static void RES_0_VHL()
     {
         ushort address = Registers.HL;
@@ -1565,6 +2422,286 @@ public class SM83
         byte newValue = ResetBit(value, 0);
         MemoryBus.WriteByte(address, newValue);
         Cycles += 8;
+    }
+    
+    public static void SET_0_A()
+    {
+        Registers.A = SetBit(Registers.A, 0);
+    }
+
+    public static void SET_0_B()
+    {
+        Registers.B = SetBit(Registers.B, 0);
+    }
+    
+    public static void SET_0_C()
+    {
+        Registers.C = SetBit(Registers.C, 0);
+    }
+    
+    public static void SET_0_D()
+    {
+        Registers.D = SetBit(Registers.D, 0);
+    }
+    
+    public static void SET_0_E()
+    {
+        Registers.E = SetBit(Registers.E, 0);
+    }
+    
+    public static void SET_0_H()
+    {
+        Registers.H = SetBit(Registers.H, 0);
+    }
+    
+    public static void SET_0_L()
+    {
+        Registers.L = SetBit(Registers.L, 0);
+    }
+    
+    public static void SET_1_A()
+    {
+        Registers.A = SetBit(Registers.A, 1);
+    }
+
+    public static void SET_1_B()
+    {
+        Registers.B = SetBit(Registers.B, 1);
+    }
+    
+    public static void SET_1_C()
+    {
+        Registers.C = SetBit(Registers.C, 1);
+    }
+    
+    public static void SET_1_D()
+    {
+        Registers.D = SetBit(Registers.D, 1);
+    }
+    
+    public static void SET_1_E()
+    {
+        Registers.E = SetBit(Registers.E, 1);
+    }
+    
+    public static void SET_1_H()
+    {
+        Registers.H = SetBit(Registers.H, 1);
+    }
+    
+    public static void SET_1_L()
+    {
+        Registers.L = SetBit(Registers.L, 1);
+    }
+    
+    public static void SET_2_A()
+    {
+        Registers.A = SetBit(Registers.A, 2);
+    }
+
+    public static void SET_2_B()
+    {
+        Registers.B = SetBit(Registers.B, 2);
+    }
+    
+    public static void SET_2_C()
+    {
+        Registers.C = SetBit(Registers.C, 2);
+    }
+    
+    public static void SET_2_D()
+    {
+        Registers.D = SetBit(Registers.D, 2);
+    }
+    
+    public static void SET_2_E()
+    {
+        Registers.E = SetBit(Registers.E, 2);
+    }
+    
+    public static void SET_2_H()
+    {
+        Registers.H = SetBit(Registers.H, 2);
+    }
+    
+    public static void SET_2_L()
+    {
+        Registers.L = SetBit(Registers.L, 2);
+    }
+    
+    public static void SET_3_A()
+    {
+        Registers.A = SetBit(Registers.A, 3);
+    }
+
+    public static void SET_3_B()
+    {
+        Registers.B = SetBit(Registers.B, 3);
+    }
+    
+    public static void SET_3_C()
+    {
+        Registers.C = SetBit(Registers.C, 3);
+    }
+    
+    public static void SET_3_D()
+    {
+        Registers.D = SetBit(Registers.D, 3);
+    }
+    
+    public static void SET_3_E()
+    {
+        Registers.E = SetBit(Registers.E, 3);
+    }
+    
+    public static void SET_3_H()
+    {
+        Registers.H = SetBit(Registers.H, 3);
+    }
+    
+    public static void SET_3_L()
+    {
+        Registers.L = SetBit(Registers.L, 3);
+    }
+    
+    public static void SET_4_A()
+    {
+        Registers.A = SetBit(Registers.A, 4);
+    }
+
+    public static void SET_4_B()
+    {
+        Registers.B = SetBit(Registers.B, 4);
+    }
+    
+    public static void SET_4_C()
+    {
+        Registers.C = SetBit(Registers.C, 4);
+    }
+    
+    public static void SET_4_D()
+    {
+        Registers.D = SetBit(Registers.D, 4);
+    }
+    
+    public static void SET_4_E()
+    {
+        Registers.E = SetBit(Registers.E, 4);
+    }
+    
+    public static void SET_4_H()
+    {
+        Registers.H = SetBit(Registers.H, 4);
+    }
+    
+    public static void SET_4_L()
+    {
+        Registers.L = SetBit(Registers.L, 4);
+    }
+    
+    public static void SET_5_A()
+    {
+        Registers.A = SetBit(Registers.A, 5);
+    }
+
+    public static void SET_5_B()
+    {
+        Registers.B = SetBit(Registers.B, 5);
+    }
+    
+    public static void SET_5_C()
+    {
+        Registers.C = SetBit(Registers.C, 5);
+    }
+    
+    public static void SET_5_D()
+    {
+        Registers.D = SetBit(Registers.D, 5);
+    }
+    
+    public static void SET_5_E()
+    {
+        Registers.E = SetBit(Registers.E, 5);
+    }
+    
+    public static void SET_5_H()
+    {
+        Registers.H = SetBit(Registers.H, 5);
+    }
+    
+    public static void SET_5_L()
+    {
+        Registers.L = SetBit(Registers.L, 5);
+    }
+    
+    public static void SET_6_A()
+    {
+        Registers.A = SetBit(Registers.A, 6);
+    }
+
+    public static void SET_6_B()
+    {
+        Registers.B = SetBit(Registers.B, 6);
+    }
+    
+    public static void SET_6_C()
+    {
+        Registers.C = SetBit(Registers.C, 6);
+    }
+    
+    public static void SET_6_D()
+    {
+        Registers.D = SetBit(Registers.D, 6);
+    }
+    
+    public static void SET_6_E()
+    {
+        Registers.E = SetBit(Registers.E, 6);
+    }
+    
+    public static void SET_6_H()
+    {
+        Registers.H = SetBit(Registers.H, 6);
+    }
+    
+    public static void SET_6_L()
+    {
+        Registers.L = SetBit(Registers.L, 6);
+    }
+    
+    public static void SET_7_A()
+    {
+        Registers.A = SetBit(Registers.A, 7);
+    }
+
+    public static void SET_7_B()
+    {
+        Registers.B = SetBit(Registers.B, 7);
+    }
+    
+    public static void SET_7_C()
+    {
+        Registers.C = SetBit(Registers.C, 7);
+    }
+    
+    public static void SET_7_D()
+    {
+        Registers.D = SetBit(Registers.D, 7);
+    }
+    
+    public static void SET_7_E()
+    {
+        Registers.E = SetBit(Registers.E, 7);
+    }
+    
+    public static void SET_7_H()
+    {
+        Registers.H = SetBit(Registers.H, 7);
+    }
+    
+    public static void SET_7_L()
+    {
+        Registers.L = SetBit(Registers.L, 7);
     }
 
     public static void SLA_A()
@@ -1638,6 +2775,19 @@ public class SM83
         Registers.CarryFlag = (regValue & 0x01) != 0;
         Registers.L = (byte)(regValue >> 1);
         Registers.ZeroFlag = Registers.L == 0;
+        Registers.HalfCarryFlag = false;
+        Registers.SubtractFlag = false;
+        Cycles += 8;
+    }
+    
+    public static void SRL_vHL()
+    {
+        ushort address = Registers.HL;
+        byte regValue = MemoryBus.ReadByte(address);
+        Registers.CarryFlag = (regValue & 0x01) != 0;
+        byte newValue = (byte)(regValue >> 1);
+        MemoryBus.WriteByte(address, newValue);
+        Registers.ZeroFlag = newValue == 0;
         Registers.HalfCarryFlag = false;
         Registers.SubtractFlag = false;
         Cycles += 8;
@@ -1904,6 +3054,18 @@ public class SM83
         Registers.HalfCarryFlag = true;
         Cycles += 4;
     }
+    
+    public static void AND_A_vHL()
+    {
+        ushort address = Registers.HL;
+        byte regValue = MemoryBus.ReadByte(address);
+        Registers.A = (byte)(Registers.A & regValue);
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = false;
+        Registers.CarryFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 4;
+    }
 
     public static void AND_A_n8()
     {
@@ -2029,6 +3191,21 @@ public class SM83
     public static void ADC_A_H()
     {
         byte value = Registers.H;
+        int carry = Registers.CarryFlag ? 1 : 0;
+        byte oldA = Registers.A;
+        int result = Registers.A + value + carry;
+        Registers.A = (byte)result;
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = ((oldA & 0x0F) + (value & 0x0F) + carry) > 0x0F;
+        Registers.CarryFlag = (oldA + value + carry) > 0xFF;
+        Cycles += 8;
+    }
+    
+    public static void ADC_A_vHL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
         int carry = Registers.CarryFlag ? 1 : 0;
         byte oldA = Registers.A;
         int result = Registers.A + value + carry;
@@ -2319,6 +3496,23 @@ public class SM83
         Cycles += 8;
     }
     
+    public static void SBC_A_vHL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        int carry = Registers.CarryFlag ? 1 : 0;
+
+        int result = Registers.A - value - carry;
+
+        Registers.ZeroFlag = ((byte)result) == 0;
+        Registers.SubtractFlag = true;
+        Registers.HalfCarryFlag = ((Registers.A & 0x0F) - (value & 0x0F) - carry) < 0;
+        Registers.CarryFlag = result < 0;
+
+        Registers.A = (byte)result;
+        Cycles += 8;
+    }
+    
     public static void SBC_A_A()
     {
         Registers.ZeroFlag = !Registers.CarryFlag;
@@ -2402,6 +3596,19 @@ public class SM83
     public static void SUB_A_L()
     {
         byte regValue = Registers.L;
+        byte oldA = Registers.A;
+        Registers.A -= regValue;
+        Registers.ZeroFlag = Registers.A == 0;
+        Registers.SubtractFlag = true;
+        Registers.HalfCarryFlag = CheckHalfCarry_Sub8(oldA, regValue);
+        Registers.CarryFlag = oldA < regValue;
+        Cycles += 4;
+    }
+    
+    public static void SUB_A_vHL()
+    {
+        ushort address = Registers.HL;
+        byte regValue = MemoryBus.ReadByte(address);
         byte oldA = Registers.A;
         Registers.A -= regValue;
         Registers.ZeroFlag = Registers.A == 0;
@@ -3457,6 +4664,13 @@ public class SM83
         Cycles += 12;
     }
 
+    public static void LD_vBC_A()
+    {
+        ushort address = Registers.BC;
+        MemoryBus.WriteByte(address, Registers.A);
+        Cycles += 8;
+    }
+
     public static void LD_A_B()
     {
         Registers.A = Registers.B;
@@ -3706,7 +4920,7 @@ public class SM83
     {
         ushort address = Registers.HL;
         byte value = MemoryBus.ReadByte(address);
-        bool halfCarry = CheckHalfCarry_Add16(value, 1);
+        bool halfCarry = (value & 0x0F) == 0x0F;
         value++;
         MemoryBus.WriteByte(address, value);
         Registers.ZeroFlag = value == 0;
@@ -4003,6 +5217,11 @@ public class SM83
     public static byte ResetBit(byte value, int bit)
     {
         return (byte)(value & ~(1 << bit));
+    }
+    
+    public static byte SetBit(byte value, int bit)
+    {
+        return (byte)(value | (1 << bit));
     }
 
 }
