@@ -388,6 +388,30 @@ public class SM83
         set => MemoryBus.WriteByte(0xFF0F, value);
     }
 
+    public static byte DIV
+    {
+        get => MemoryBus.ReadByte(0xFF04);
+        set => MemoryBus.WriteByte(0xFF04, value);
+    }
+    
+    public static byte TIMA
+    {
+        get => MemoryBus.ReadByte(0xFF05);
+        set => MemoryBus.WriteByte(0xFF05, value);
+    }
+    
+    public static byte TMA
+    {
+        get => MemoryBus.ReadByte(0xFF06);
+        set => MemoryBus.WriteByte(0xFF06, value);
+    }
+    
+    public static byte TAC
+    {
+        get => MemoryBus.ReadByte(0xFF07);
+        set => MemoryBus.WriteByte(0xFF07, value);
+    }
+
     public static void RequestInterrupt(InterruptFlags flag)
     {
         IF |= (byte)flag;

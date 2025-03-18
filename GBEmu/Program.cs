@@ -53,7 +53,7 @@ public class Program
     public const int CPU_CYCLES_PER_FRAME = 70224;
 
     public const bool UseGameboyDoctor = false;
-    public const bool SkipBoot = false;
+    public const bool SkipBoot = true;
     
     [DllImport("comdlg32.dll", SetLastError = true, CharSet = CharSet.Auto)]
     private static extern bool GetOpenFileName(ref OpenFileName ofn);
@@ -104,6 +104,8 @@ public class Program
 
         MemoryBus memoryBus = new MemoryBus(bootRom, cartridge, Ppu, inputController, Apu);
         Ppu.SetMemoryBus(memoryBus);
+        
+        SerialMonitor.StartSerialMonitor();
         
         window = new RenderWindow(new VideoMode(160, 144), "GBEmu");
         window.Closed += (sender, e) => running = false;
@@ -221,7 +223,24 @@ public class Program
 
         window.Close();
     }
+    
+    private static void HandleSerialTransfer()
+    {
+        byte sc = SM83.MemoryBus.ReadByte(0xFF02);
 
+        if ((sc & 0x80) != 0) // If transfer start bit (bit 7) is set
+        {
+            byte data = SM83.MemoryBus.ReadByte(0xFF01); // Read SB register
+            SerialMonitor.LogSerialData(data); // Log it to monitor
+
+            // Simulate transfer completion
+            SM83.MemoryBus.WriteByte(0xFF02, (byte)(sc & 0x7F)); // Clear transfer bit
+        }
+    }
+
+
+    private static int divCycles = 0;
+    private static int timerCycles = 0;
     public static async Task RunFrame()
     {
         Stopwatch stopwatch = Stopwatch.StartNew();
@@ -249,12 +268,50 @@ public class Program
             
             int elapsedCycles = SM83.Cycles - previousCycles;
             Ppu.Step(elapsedCycles);
+            
+            divCycles += elapsedCycles;
+            bool timerEnabled = (SM83.TAC & 0b00000100) != 0;
+
+            if (timerEnabled)
+            {
+                int clockSelect = SM83.TAC & 0b00000011;
+                int[] timerFrequencies = { 1024, 16, 64, 256 };
+                int timerThreshold = timerFrequencies[clockSelect];
+
+                timerCycles += elapsedCycles;
+
+                while (timerCycles >= timerThreshold)
+                {
+                    timerCycles -= timerThreshold;
+
+                    if (SM83.TIMA == 0xFF)
+                    {
+                        SM83.TIMA = SM83.TMA;
+                        SM83.RequestInterrupt(SM83.InterruptFlags.Timer);
+                    }
+                    else
+                    {
+                        SM83.TIMA++;
+                    }
+                }
+            }
+
+            if (divCycles >= 256)
+            {
+                divCycles -= 256;
+                MemoryBus.AllowDivWrite = true;
+                SM83.DIV++;
+                MemoryBus.AllowDivWrite = false;
+            }
+            
             cyclesThisFrame += elapsedCycles;
 
             if (cyclesThisFrame % 4 == 0)
             {
-                Apu.Step();
+                await Apu.Step();
             }
+
+            HandleSerialTransfer();
         }
 
         double targetFrameTime = 1000.0 / 59.7;

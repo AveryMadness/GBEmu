@@ -82,6 +82,8 @@ public class APU
     public APU()
     {
         waveProvider = new BufferedWaveProvider(new WaveFormat(44100, 16, 1));
+        waveProvider.BufferLength = SAMPLE_RATE * 2;
+        waveProvider.DiscardOnBufferOverflow = true;
         waveOut = new WaveOutEvent();
         waveOut.Init(waveProvider);
         waveOut.Play();
@@ -90,21 +92,27 @@ public class APU
     private void UpdateAudio(float sample)
     {
         short sample16 = (short)(sample * short.MaxValue);
+        
+        if (waveProvider.BufferedBytes >= waveProvider.BufferLength - 2)
+        {
+            return; // Skip adding samples if the buffer is full
+        }
+
+        // Ensure we don't exceed buffer size
+        if (bufferIndex + 2 >= audioBuffer.Length)
+        {
+            waveProvider.AddSamples(audioBuffer, 0, bufferIndex);
+            bufferIndex = 0;
+        }
 
         audioBuffer[bufferIndex++] = (byte)(sample16 & 0xFF);
         audioBuffer[bufferIndex++] = (byte)((sample16 >> 8) & 0xFF);
-
-        if (bufferIndex >= audioBuffer.Length)
-        {
-            waveProvider.AddSamples(audioBuffer, 0, audioBuffer.Length);
-            bufferIndex = 0;
-        }
     }
 
     private int cycleCount = 0;
 
     //called every T-Cycle, (4 M-Cycles)
-    public void Step()
+    public async Task Step()
     {
         cycleCount++;
 
@@ -120,6 +128,8 @@ public class APU
             bool playHigh = StepChannel2();
             stepSample += playHigh ? (channelVolume[2] / 15.0f) : -1;
         }
+
+        stepSample *= 0.5f; //normalize volume
 
         UpdateAudio(stepSample);
     }

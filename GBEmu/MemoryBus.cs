@@ -9,6 +9,12 @@ public class MemoryBus
     private InputController input;
     private APU apu;
     public bool useBootRom = true;
+    
+    //timer; DONT USE!
+    private byte DIV;
+    private byte TIMA;
+    private byte TMA;
+    private byte TAC;
 
     public MemoryBus(byte[] bootRom, Cartridge cart, PPU ppu, InputController input, APU apu)
     {
@@ -28,44 +34,54 @@ public class MemoryBus
     
     public byte ReadByte(ushort address)
     {
-        switch (address)
+        try
         {
-            case <= 0x7FFF: // ROM (Fixed and switchable bank)
+            switch (address)
             {
-                if (useBootRom && address < 0x100)
+                case <= 0x7FFF: // ROM (Fixed and switchable bank)
                 {
-                    return bootRom[address];
+                    if (useBootRom && address < 0x100)
+                    {
+                        return bootRom[address];
+                    }
+
+                    return cartridge.Read(address);
                 }
-                return cartridge.Read(address);
+
+                case >= 0x8000 and <= 0x9FFF: // VRAM
+                    return ppu.ReadVRAM(address);
+
+                case >= 0xA000 and <= 0xBFFF: // External Cartridge RAM
+                    return cartridge.ReadRAM(address);
+
+                case >= 0xC000 and <= 0xDFFF: // WRAM
+                    return ram[address];
+
+                case >= 0xE000 and <= 0xFDFF: // Echo RAM (mirror of WRAM)
+                    return ram[address - 0x2000];
+
+                case >= 0xFE00 and <= 0xFE9F: // OAM (sprite data)
+                    return ppu.ReadOAM(address);
+
+                case >= 0xFF00 and <= 0xFF7F: // I/O Registers
+                    return HandleIORead(address);
+
+                case >= 0xFF80 and <= 0xFFFE: // HRAM
+                    return ram[address];
+
+                case 0xFFFF: // Interrupt Enable Register
+                    return ram[address];
+
+                default:
+                    return 0xFF; // Unmapped memory returns 0xFF
             }
-
-            case >= 0x8000 and <= 0x9FFF: // VRAM
-                return ppu.ReadVRAM(address);
-
-            case >= 0xA000 and <= 0xBFFF: // External Cartridge RAM
-                return cartridge.ReadRAM(address);
-
-            case >= 0xC000 and <= 0xDFFF: // WRAM
-                return ram[address];
-
-            case >= 0xE000 and <= 0xFDFF: // Echo RAM (mirror of WRAM)
-                return ram[address - 0x2000];
-
-            case >= 0xFE00 and <= 0xFE9F: // OAM (sprite data)
-                return ppu.ReadOAM(address);
-
-            case >= 0xFF00 and <= 0xFF7F: // I/O Registers
-                return HandleIORead(address);
-
-            case >= 0xFF80 and <= 0xFFFE: // HRAM
-                return ram[address];
-
-            case 0xFFFF: // Interrupt Enable Register
-                return ram[address];
-
-            default:
-                return 0xFF; // Unmapped memory returns 0xFF
         }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+
+        return 0xFF;
     }
 
     public void WriteWord(ushort address, ushort value)
@@ -79,49 +95,56 @@ public class MemoryBus
 
     public void WriteByte(ushort address, byte value)
     {
-        if (address == 0xFF50)
+        try
         {
-            useBootRom = false;
-            return;
+            if (address == 0xFF50)
+            {
+                useBootRom = false;
+                return;
+            }
+
+            switch (address)
+            {
+                case <= 0x7FFF: // ROM is typically read-only, but may handle memory banking
+                    cartridge.Write(address, value);
+                    break;
+
+                case >= 0x8000 and <= 0x9FFF: // VRAM
+                    ppu.WriteVRAM(address, value);
+                    break;
+
+                case >= 0xA000 and <= 0xBFFF: // External RAM
+                    cartridge.WriteRAM(address, value);
+                    break;
+
+                case >= 0xC000 and <= 0xDFFF: // WRAM
+                    ram[address] = value;
+                    break;
+
+                case >= 0xE000 and <= 0xFDFF: // Echo RAM
+                    ram[address - 0x2000] = value;
+                    break;
+
+                case >= 0xFE00 and <= 0xFE9F: // OAM
+                    ppu.WriteOAM(address, value);
+                    break;
+
+                case >= 0xFF00 and <= 0xFF7F: // I/O Registers
+                    HandleIOWrite(address, value);
+                    break;
+
+                case >= 0xFF80 and <= 0xFFFE: // HRAM
+                    ram[address] = value;
+                    break;
+
+                case 0xFFFF: // Interrupt Enable Register
+                    ram[address] = value;
+                    break;
+            }
         }
-        
-        switch (address)
+        catch (Exception e)
         {
-            case <= 0x7FFF: // ROM is typically read-only, but may handle memory banking
-                cartridge.Write(address, value);
-                break;
-
-            case >= 0x8000 and <= 0x9FFF: // VRAM
-                ppu.WriteVRAM(address, value);
-                break;
-
-            case >= 0xA000 and <= 0xBFFF: // External RAM
-                cartridge.WriteRAM(address, value);
-                break;
-
-            case >= 0xC000 and <= 0xDFFF: // WRAM
-                ram[address] = value;
-                break;
-
-            case >= 0xE000 and <= 0xFDFF: // Echo RAM
-                ram[address - 0x2000] = value;
-                break;
-
-            case >= 0xFE00 and <= 0xFE9F: // OAM
-                ppu.WriteOAM(address, value);
-                break;
-
-            case >= 0xFF00 and <= 0xFF7F: // I/O Registers
-                HandleIOWrite(address, value);
-                break;
-
-            case >= 0xFF80 and <= 0xFFFE: // HRAM
-                ram[address] = value;
-                break;
-
-            case 0xFFFF: // Interrupt Enable Register
-                ram[address] = value;
-                break;
+            Console.WriteLine(e);
         }
     }
 
@@ -131,6 +154,11 @@ public class MemoryBus
         {
             case 0xFF00: // Joypad input
                 return input.Read();
+            
+            case 0xFF04: return DIV;
+            case 0xFF05: return TIMA;
+            case 0xFF06: return TMA;
+            case 0xFF07: return TAC;
             
             case >= 0xFF10 and <= 0xFF3F:
                 return apu.ReadRegister(address);
@@ -143,6 +171,8 @@ public class MemoryBus
         }
     }
 
+    //hack
+    public static bool AllowDivWrite = false;
     private void HandleIOWrite(ushort address, byte value)
     {
         switch (address)
@@ -150,6 +180,22 @@ public class MemoryBus
             case 0xFF00: // Joypad input
                 input.Write(value);
                 break;
+
+            case 0xFF04:
+            {
+                if (AllowDivWrite)
+                {
+                    DIV = value;
+                }
+                else
+                {
+                    DIV = 0x00;
+                }
+                break;
+            }
+            case 0xFF05: TIMA = value; break;
+            case 0xFF06: TMA = value; break;
+            case 0xFF07: TAC = value; break;
             
             case >= 0xFF10 and <= 0xFF3F:
                 apu.WriteRegister(address, value);
