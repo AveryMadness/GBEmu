@@ -1,4 +1,6 @@
-﻿namespace GBEmu;
+﻿using NAudio.Wave;
+
+namespace GBEmu;
 
 public class APU
 {
@@ -61,12 +63,43 @@ public class APU
     
     #region Non-Register Variables
 
-    private List<int> waveDutyPositions = [];
-    private List<bool> channelsEnabled = [];
-    private List<float> channelVolume = [];
-    private List<int> frequencyTimer = [];
-    private List<int> lengthTimer = [];
+    private List<int> waveDutyPositions = [0, 0, 0, 0];
+    private List<bool> channelsEnabled = [false, false, false, false];
+    private List<float> channelVolume = [0, 0, 0, 0];
+    private List<int> frequencyTimer = [0, 0, 0, 0];
+    private List<int> lengthTimer = [0, 0, 0, 0];
+    private List<int> envelopeTimer = [0, 0, 0, 0];
+
+    private BufferedWaveProvider waveProvider;
+    private WaveOutEvent waveOut;
+    private byte[] audioBuffer = new byte[BUFFER_SIZE * 2];
+    private int bufferIndex = 0;
+
+    private const int SAMPLE_RATE = 44100;
+    private const int BUFFER_SIZE = SAMPLE_RATE / 60;
     #endregion
+
+    public APU()
+    {
+        waveProvider = new BufferedWaveProvider(new WaveFormat(44100, 16, 1));
+        waveOut = new WaveOutEvent();
+        waveOut.Init(waveProvider);
+        waveOut.Play();
+    }
+
+    private void UpdateAudio(float sample)
+    {
+        short sample16 = (short)(sample * short.MaxValue);
+
+        audioBuffer[bufferIndex++] = (byte)(sample16 & 0xFF);
+        audioBuffer[bufferIndex++] = (byte)((sample16 >> 8) & 0xFF);
+
+        if (bufferIndex >= audioBuffer.Length)
+        {
+            waveProvider.AddSamples(audioBuffer, 0, audioBuffer.Length);
+            bufferIndex = 0;
+        }
+    }
 
     private int cycleCount = 0;
 
@@ -75,25 +108,62 @@ public class APU
     {
         cycleCount++;
 
+        float stepSample = 0.0f;
+
+        if (cycleCount % 8192 == 0)
+        {
+            StepFrameSequencer();
+        }
+
         if (channelsEnabled[2])
         {
-            StepChannel2();
+            bool playHigh = StepChannel2();
+            stepSample += playHigh ? (channelVolume[2] / 15.0f) : -1;
         }
+
+        UpdateAudio(stepSample);
     }
 
     private int frameSequencerStep = 0;
     private void StepFrameSequencer()
     {
-        if (frameSequencerStep == 0)
+        if (frameSequencerStep % 2 == 0 || frameSequencerStep == 0)
         {
-            
+            if (channelsEnabled[2])
+                StepChannel2Length();
         }
-        
+
+        if (frameSequencerStep == 7)
+        {
+            if (envelopeTimer[2] > 0)
+                StepChannel2Envelope();
+        }
         
         frameSequencerStep++;
 
         if (frameSequencerStep > 7)
             frameSequencerStep = 0;
+    }
+
+    private void StepChannel2Envelope()
+    {
+        envelopeTimer[2]--;
+
+        if (envelopeTimer[2] <= 0)
+        {
+            if (GetChannelEnvelopeDistance(NR22) == 1)
+            {
+                if (channelVolume[2] < 15)
+                    channelVolume[2]++;
+            }
+            else
+            {
+                if (channelVolume[2] > 0)
+                    channelVolume[2]--;
+            }
+
+            envelopeTimer[2] = GetChannelInitialVolume(NR22);
+        }
     }
 
     private void StepChannel2Length()
@@ -129,9 +199,10 @@ public class APU
             channelsEnabled[2] = false;
         
         channelVolume[2] = initialVolume;
+        envelopeTimer[2] = GetChannelEnvelopeTimer(NR22);
     }
 
-    private void StepChannel2()
+    private bool StepChannel2()
     {
         int waveDuty = (NR21 >> 6) & 0b11;
         
@@ -145,8 +216,7 @@ public class APU
             frequencyTimer[2] = (2048 - frequency) * 4;
         }
         
-        bool outputHigh = ((WaveDutyTable[waveDuty] >> (7 - waveDutyPositions[2])) & 1) != 0;
-        //call func to output sound
+        return ((WaveDutyTable[waveDuty] >> (7 - waveDutyPositions[2])) & 1) != 0;
     }
     
     private ushort GetChannelFrequency(byte NRx3Reg, byte NRx4Reg)
@@ -159,6 +229,16 @@ public class APU
     private byte GetChannelInitialVolume(byte NRx2Reg)
     {
         return (byte)(NRx2Reg & 0b11110000);
+    }
+    
+    private byte GetChannelEnvelopeTimer(byte NRx2Reg)
+    {
+        return (byte)(NRx2Reg & 0b00000111);
+    }
+    
+    private byte GetChannelEnvelopeDistance(byte NRx2Reg)
+    {
+        return (byte)(NRx2Reg & 0b00001000);
     }
 
     private byte GetChannelInitialLengthTimer(byte NRx1Reg)
@@ -191,12 +271,32 @@ public class APU
             case 0xFF11: NR11 = value; break;
             case 0xFF12: NR12 = value; break;
             case 0xFF13: NR13 = value; break;
-            case 0xFF14: NR14 = value; break;
+            case 0xFF14:
+            {
+                NR14 = value;
+                
+                if ((NR14 & 0b10000000) != 0)
+                {
+                    //TriggerChannel1();
+                }
+
+                break;
+            }
             
             case 0xFF16: NR21 = value; break;
             case 0xFF17: NR22 = value; break;
             case 0xFF18: NR23 = value; break;
-            case 0xFF19: NR24 = value; break;
+            case 0xFF19:
+            {
+                NR24 = value;
+                
+                if ((NR24 & 0b10000000) != 0)
+                {
+                    TriggerChannel2();
+                }
+
+                break;
+            }
             
             case 0xFF1A: NR30 = value; break;
             case 0xFF1B: NR31 = value; break;

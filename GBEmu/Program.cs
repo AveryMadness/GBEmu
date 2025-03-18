@@ -43,6 +43,7 @@ public class Program
 {
     public static MemoryBus MemoryBus;
     public static PPU Ppu;
+    public static APU Apu;
     private static RenderWindow window;
     private static Texture texture;
     private static Sprite sprite;
@@ -52,7 +53,7 @@ public class Program
     public const int CPU_CYCLES_PER_FRAME = 70224;
 
     public const bool UseGameboyDoctor = false;
-    public const bool SkipBoot = true;
+    public const bool SkipBoot = false;
     
     [DllImport("comdlg32.dll", SetLastError = true, CharSet = CharSet.Auto)]
     private static extern bool GetOpenFileName(ref OpenFileName ofn);
@@ -97,11 +98,11 @@ public class Program
         Ppu = new PPU();
         InputController inputController = new InputController();
 
-        APU apu = new APU();
+        Apu = new APU();
 
         byte[] bootRom = File.ReadAllBytes(AppDomain.CurrentDomain.BaseDirectory + "/dmg_boot.bin");
 
-        MemoryBus memoryBus = new MemoryBus(bootRom, cartridge, Ppu, inputController, apu);
+        MemoryBus memoryBus = new MemoryBus(bootRom, cartridge, Ppu, inputController, Apu);
         Ppu.SetMemoryBus(memoryBus);
         
         window = new RenderWindow(new VideoMode(160, 144), "GBEmu");
@@ -249,6 +250,11 @@ public class Program
             int elapsedCycles = SM83.Cycles - previousCycles;
             Ppu.Step(elapsedCycles);
             cyclesThisFrame += elapsedCycles;
+
+            if (cyclesThisFrame % 4 == 0)
+            {
+                Apu.Step();
+            }
         }
 
         double targetFrameTime = 1000.0 / 59.7;

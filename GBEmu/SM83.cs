@@ -63,27 +63,48 @@ public class SM83
         {0x3C, SRL_H},
         {0x3D, SRL_L},
         {0x3F, SRL_A},
+        {0x40, BIT_0_B},
+        {0x41, BIT_0_C},
+        {0x42, BIT_0_D},
+        {0x43, BIT_0_E},
+        {0x44, BIT_0_H},
+        {0x45, BIT_0_L},
         {0x46, BIT_0_vHL},
-        {0x6C, BIT_5_H},
-        {0x79, BIT_7_C},
-        {0x7D, BIT_7_L},
-        {0x7C, BIT_7_H},
-        {0x87, RES_0_A},
-        {0x7F, BIT_7_A},
-        {0x86, RES_0_VHL},
+        {0x47, BIT_0_A},
+        {0x48, BIT_1_B},
+        {0x49, BIT_1_C},
+        {0x4A, BIT_1_D},
+        {0x4B, BIT_1_E},
+        {0x4C, BIT_1_H},
+        {0x4D, BIT_1_L},
+        {0x4F, BIT_1_A},
         {0x50, BIT_2_B},
+        {0x51, BIT_2_C},
+        {0x52, BIT_2_D},
+        {0x53, BIT_2_E},
+        {0x54, BIT_2_H},
+        {0x55, BIT_2_L},
+        {0x57, BIT_2_A},
+        {0x58, BIT_3_B},
+        {0x59, BIT_3_C},
+        {0x5A, BIT_3_D},
+        {0x5B, BIT_3_E},
+        {0x5C, BIT_3_H},
+        {0x5D, BIT_3_L},
+        {0x5F, BIT_3_A},
         {0x60, BIT_4_B},
         {0x68, BIT_5_B},
-        {0x58, BIT_3_B},
-        {0x7E, BIT_7_vHL},
-        {0x40, BIT_0_B},
-        {0x5F, BIT_3_A},
+        {0x6C, BIT_5_H},
         {0x70, BIT_6_B},
-        {0x7B, BIT_7_E},
         {0x78, BIT_7_B},
-        {0x42, BIT_0_D},
-        {0x4F, BIT_1_A},
-        {0x47, BIT_0_A}
+        {0x79, BIT_7_C},
+        {0x7B, BIT_7_E},
+        {0x7C, BIT_7_H},
+        {0x7D, BIT_7_L},
+        {0x7E, BIT_7_vHL},
+        {0x7F, BIT_7_A},
+        {0x86, RES_0_VHL},
+        {0x87, RES_0_A},
     };
  
     public static Dictionary<byte, Action> InstructionMap = new Dictionary<byte, Action>
@@ -514,6 +535,16 @@ public class SM83
         Cycles += 8;
     }
     
+    public static void BIT_0_C()
+    {
+        byte register = Registers.C;
+        bool bitSet = IsBitSet(register, 0);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
     public static void BIT_2_B()
     {
         byte register = Registers.B;
@@ -524,9 +555,119 @@ public class SM83
         Cycles += 8;
     }
     
+    public static void BIT_2_C()
+    {
+        byte register = Registers.C;
+        bool bitSet = IsBitSet(register, 2);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_2_D()
+    {
+        byte register = Registers.D;
+        bool bitSet = IsBitSet(register, 2);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_2_E()
+    {
+        byte register = Registers.E;
+        bool bitSet = IsBitSet(register, 2);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_2_H()
+    {
+        byte register = Registers.H;
+        bool bitSet = IsBitSet(register, 2);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_2_L()
+    {
+        byte register = Registers.L;
+        bool bitSet = IsBitSet(register, 2);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_2_A()
+    {
+        byte register = Registers.A;
+        bool bitSet = IsBitSet(register, 2);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
     public static void BIT_3_B()
     {
         byte register = Registers.B;
+        bool bitSet = IsBitSet(register, 3);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_3_C()
+    {
+        byte register = Registers.C;
+        bool bitSet = IsBitSet(register, 3);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_3_D()
+    {
+        byte register = Registers.D;
+        bool bitSet = IsBitSet(register, 3);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_3_E()
+    {
+        byte register = Registers.E;
+        bool bitSet = IsBitSet(register, 3);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_3_H()
+    {
+        byte register = Registers.H;
+        bool bitSet = IsBitSet(register, 3);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_3_L()
+    {
+        byte register = Registers.L;
         bool bitSet = IsBitSet(register, 3);
         Registers.ZeroFlag = !bitSet;
         Registers.SubtractFlag = false;
@@ -604,6 +745,36 @@ public class SM83
         Cycles += 8;
     }
     
+    public static void BIT_0_E()
+    {
+        byte register = Registers.E;
+        bool bitSet = IsBitSet(register, 0);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_0_H()
+    {
+        byte register = Registers.H;
+        bool bitSet = IsBitSet(register, 0);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_0_L()
+    {
+        byte register = Registers.L;
+        bool bitSet = IsBitSet(register, 0);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
     public static void BIT_0_vHL()
     {
         ushort address = Registers.HL;
@@ -619,6 +790,66 @@ public class SM83
     {
         byte register = Registers.A;
         bool bitSet = IsBitSet(register, 0);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_1_B()
+    {
+        byte register = Registers.B;
+        bool bitSet = IsBitSet(register, 1);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_1_C()
+    {
+        byte register = Registers.C;
+        bool bitSet = IsBitSet(register, 1);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_1_D()
+    {
+        byte register = Registers.D;
+        bool bitSet = IsBitSet(register, 1);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_1_E()
+    {
+        byte register = Registers.E;
+        bool bitSet = IsBitSet(register, 1);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_1_H()
+    {
+        byte register = Registers.H;
+        bool bitSet = IsBitSet(register, 1);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_1_L()
+    {
+        byte register = Registers.L;
+        bool bitSet = IsBitSet(register, 1);
         Registers.ZeroFlag = !bitSet;
         Registers.SubtractFlag = false;
         Registers.HalfCarryFlag = true;

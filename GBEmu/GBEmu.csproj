@@ -29,6 +29,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="NAudio" Version="2.2.1" />
       <PackageReference Include="SFML.Net" Version="2.6.1" />
     </ItemGroup>
 
