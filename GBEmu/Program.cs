@@ -48,6 +48,8 @@ public class Program
     private static Texture texture;
     private static Sprite sprite;
     private static Image frameImage;
+    private static Font debugFont;
+    public static Text debugText;
     private static bool running = true;
     
     public const int CPU_CYCLES_PER_FRAME = 70224;
@@ -114,42 +116,42 @@ public class Program
         {
             if (e.Code == Keyboard.Key.Z)
             {
-                inputController.PressButton(GameBoyButton.A);
+                inputController.PressButton(GameBoyButton.ARight);
             }
             
             if (e.Code == Keyboard.Key.X)
             {
-                inputController.PressButton(GameBoyButton.B);
+                inputController.PressButton(GameBoyButton.BLeft);
             }
 
             if (e.Code == Keyboard.Key.Enter)
             {
-                inputController.PressButton(GameBoyButton.Start);
+                inputController.PressButton(GameBoyButton.StartDown);
             }
             
             if (e.Code == Keyboard.Key.RShift)
             {
-                inputController.PressButton(GameBoyButton.Select);
+                inputController.PressButton(GameBoyButton.SelectUp);
             }
             
             if (e.Code == Keyboard.Key.Up)
             {
-                inputController.PressButton(GameBoyButton.Up);
+                inputController.PressButton(GameBoyButton.SelectUp);
             }
             
             if (e.Code == Keyboard.Key.Down)
             {
-                inputController.PressButton(GameBoyButton.Down);
+                inputController.PressButton(GameBoyButton.StartDown);
             }
             
             if (e.Code == Keyboard.Key.Left)
             {
-                inputController.PressButton(GameBoyButton.Left);
+                inputController.PressButton(GameBoyButton.BLeft);
             }
             
             if (e.Code == Keyboard.Key.Right)
             {
-                inputController.PressButton(GameBoyButton.Right);
+                inputController.PressButton(GameBoyButton.ARight);
             }
         };
         
@@ -157,48 +159,54 @@ public class Program
         {
             if (e.Code == Keyboard.Key.Z)
             {
-                inputController.ReleaseButton(GameBoyButton.A);
+                inputController.ReleaseButton(GameBoyButton.ARight);
             }
             
             if (e.Code == Keyboard.Key.X)
             {
-                inputController.ReleaseButton(GameBoyButton.B);
+                inputController.ReleaseButton(GameBoyButton.BLeft);
             }
 
             if (e.Code == Keyboard.Key.Enter)
             {
-                inputController.ReleaseButton(GameBoyButton.Start);
+                inputController.ReleaseButton(GameBoyButton.StartDown);
             }
             
             if (e.Code == Keyboard.Key.RShift)
             {
-                inputController.ReleaseButton(GameBoyButton.Select);
+                inputController.ReleaseButton(GameBoyButton.SelectUp);
             }
             
             if (e.Code == Keyboard.Key.Up)
             {
-                inputController.ReleaseButton(GameBoyButton.Up);
+                inputController.ReleaseButton(GameBoyButton.SelectUp);
             }
             
             if (e.Code == Keyboard.Key.Down)
             {
-                inputController.ReleaseButton(GameBoyButton.Down);
+                inputController.ReleaseButton(GameBoyButton.StartDown);
             }
             
             if (e.Code == Keyboard.Key.Left)
             {
-                inputController.ReleaseButton(GameBoyButton.Left);
+                inputController.ReleaseButton(GameBoyButton.BLeft);
             }
             
             if (e.Code == Keyboard.Key.Right)
             {
-                inputController.ReleaseButton(GameBoyButton.Right);
+                inputController.ReleaseButton(GameBoyButton.ARight);
             }
         };
 
         frameImage = new Image((uint)160, (uint)144, SFML.Graphics.Color.White);
         texture = new Texture(160, 144);
         sprite = new Sprite(texture);
+        debugFont = new Font(AppDomain.CurrentDomain.BaseDirectory + "/Bytesized-Regular.ttf");
+        debugText = new Text("Input: 00000000", debugFont, 10)
+        {
+            FillColor = Color.Green,
+            Position = new Vector2f(5, 5)
+        };
 
         SM83.MemoryBus = memoryBus;
         SM83.Registers.Reset();
@@ -343,6 +351,7 @@ public class Program
         texture.Update(frameImage);
         window.Clear();
         window.Draw(sprite);
+        window.Draw(debugText);
         window.Display();
     }
 }

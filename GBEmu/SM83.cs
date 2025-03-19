@@ -85,6 +85,7 @@ public class SM83
         {0x4B, BIT_1_E},
         {0x4C, BIT_1_H},
         {0x4D, BIT_1_L},
+        {0x4E, BIT_1_vHL},
         {0x4F, BIT_1_A},
         {0x50, BIT_2_B},
         {0x51, BIT_2_C},
@@ -92,6 +93,7 @@ public class SM83
         {0x53, BIT_2_E},
         {0x54, BIT_2_H},
         {0x55, BIT_2_L},
+        {0x56, BIT_2_vHL},
         {0x57, BIT_2_A},
         {0x58, BIT_3_B},
         {0x59, BIT_3_C},
@@ -99,6 +101,7 @@ public class SM83
         {0x5B, BIT_3_E},
         {0x5C, BIT_3_H},
         {0x5D, BIT_3_L},
+        {0x5E, BIT_3_vHL},
         {0x5F, BIT_3_A},
         {0x60, BIT_4_B},
         {0x61, BIT_4_C},
@@ -106,6 +109,7 @@ public class SM83
         {0x63, BIT_4_E},
         {0x64, BIT_4_H},
         {0x65, BIT_4_L},
+        {0x66, BIT_4_vHL},
         {0x67, BIT_4_A},
         {0x68, BIT_5_B},
         {0x69, BIT_5_C},
@@ -113,6 +117,7 @@ public class SM83
         {0x6B, BIT_5_E},
         {0x6C, BIT_5_H},
         {0x6D, BIT_5_L},
+        {0x6E, BIT_5_vHL},
         {0x6F, BIT_5_A},
         {0x70, BIT_6_B},
         {0x71, BIT_6_C},
@@ -120,6 +125,7 @@ public class SM83
         {0x73, BIT_6_E},
         {0x74, BIT_6_H},
         {0x75, BIT_6_L},
+        {0x76, BIT_6_vHL},
         {0x77, BIT_6_A},
         {0x78, BIT_7_B},
         {0x79, BIT_7_C},
@@ -135,7 +141,7 @@ public class SM83
         {0x83, RES_0_E},
         {0x84, RES_0_H},
         {0x85, RES_0_L},
-        {0x86, RES_0_VHL},
+        {0x86, RES_0_vHL},
         {0x87, RES_0_A},
         {0x88, RES_1_B},
         {0x89, RES_1_C},
@@ -143,6 +149,7 @@ public class SM83
         {0x8B, RES_1_E},
         {0x8C, RES_1_H},
         {0x8D, RES_1_L},
+        {0x8E, RES_1_vHL},
         {0x8F, RES_1_A},
         {0x90, RES_2_B},
         {0x91, RES_2_C},
@@ -150,6 +157,7 @@ public class SM83
         {0x93, RES_2_E},
         {0x94, RES_2_H},
         {0x95, RES_2_L},
+        {0x96, RES_2_vHL},
         {0x97, RES_2_A},
         {0x98, RES_3_B},
         {0x99, RES_3_C},
@@ -157,6 +165,7 @@ public class SM83
         {0x9B, RES_3_E},
         {0x9C, RES_3_H},
         {0x9D, RES_3_L},
+        {0x9E, RES_3_vHL},
         {0x9F, RES_3_A},
         {0xA0, RES_4_B},
         {0xA1, RES_4_C},
@@ -164,6 +173,7 @@ public class SM83
         {0xA3, RES_4_E},
         {0xA4, RES_4_H},
         {0xA5, RES_4_L},
+        {0xA6, RES_4_vHL},
         {0xA7, RES_4_A},
         {0xA8, RES_5_B},
         {0xA9, RES_5_C},
@@ -171,6 +181,7 @@ public class SM83
         {0xAB, RES_5_E},
         {0xAC, RES_5_H},
         {0xAD, RES_5_L},
+        {0xAE, RES_5_vHL},
         {0xAF, RES_5_A},
         {0xB0, RES_6_B},
         {0xB1, RES_6_C},
@@ -178,6 +189,7 @@ public class SM83
         {0xB3, RES_6_E},
         {0xB4, RES_6_H},
         {0xB5, RES_6_L},
+        {0xB6, RES_6_vHL},
         {0xB7, RES_6_A},
         {0xB8, RES_7_B},
         {0xB9, RES_7_C},
@@ -185,6 +197,7 @@ public class SM83
         {0xBB, RES_7_E},
         {0xBC, RES_7_H},
         {0xBD, RES_7_L},
+        {0xBE, RES_7_vHL},
         {0xBF, RES_7_A},
         {0xC0, SET_0_B},
         {0xC1, SET_0_C},
@@ -192,6 +205,7 @@ public class SM83
         {0xC3, SET_0_E},
         {0xC4, SET_0_H},
         {0xC5, SET_0_L},
+        {0xC6, SET_0_vHL},
         {0xC7, SET_0_A},
         {0xC8, SET_1_B},
         {0xC9, SET_1_C},
@@ -199,6 +213,7 @@ public class SM83
         {0xCB, SET_1_E},
         {0xCC, SET_1_H},
         {0xCD, SET_1_L},
+        {0xCE, SET_1_vHL},
         {0xCF, SET_1_A},
         {0xD0, SET_2_B},
         {0xD1, SET_2_C},
@@ -206,6 +221,7 @@ public class SM83
         {0xD3, SET_2_E},
         {0xD4, SET_2_H},
         {0xD5, SET_2_L},
+        {0xD6, SET_2_vHL},
         {0xD7, SET_2_A},
         {0xD8, SET_3_B},
         {0xD9, SET_3_C},
@@ -213,6 +229,7 @@ public class SM83
         {0xDB, SET_3_E},
         {0xDC, SET_3_H},
         {0xDD, SET_3_L},
+        {0xDE, SET_3_vHL},
         {0xDF, SET_3_A},
         {0xE0, SET_4_B},
         {0xE1, SET_4_C},
@@ -220,6 +237,7 @@ public class SM83
         {0xE3, SET_4_E},
         {0xE4, SET_4_H},
         {0xE5, SET_4_L},
+        {0xE6, SET_4_vHL},
         {0xE7, SET_4_A},
         {0xE8, SET_5_B},
         {0xE9, SET_5_C},
@@ -227,6 +245,7 @@ public class SM83
         {0xEB, SET_5_E},
         {0xEC, SET_5_H},
         {0xED, SET_5_L},
+        {0xEE, SET_5_vHL},
         {0xEF, SET_5_A},
         {0xF0, SET_6_B},
         {0xF1, SET_6_C},
@@ -234,6 +253,7 @@ public class SM83
         {0xF3, SET_6_E},
         {0xF4, SET_6_H},
         {0xF5, SET_6_L},
+        {0xF6, SET_6_vHL},
         {0xF7, SET_6_A},
         {0xF8, SET_7_B},
         {0xF9, SET_7_C},
@@ -241,7 +261,8 @@ public class SM83
         {0xFB, SET_7_E},
         {0xFC, SET_7_H},
         {0xFD, SET_7_L},
-        {0xFF, SET_7_A},
+        {0xFE, SET_7_vHL},
+        {0xFF, SET_7_A}
     };
     #endregion
 
@@ -1189,6 +1210,72 @@ public class SM83
     public static void BIT_1_L()
     {
         byte register = Registers.L;
+        bool bitSet = IsBitSet(register, 1);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_2_vHL()
+    {
+        ushort address = Registers.HL;
+        byte register = MemoryBus.ReadByte(address);
+        bool bitSet = IsBitSet(register, 2);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_3_vHL()
+    {
+        ushort address = Registers.HL;
+        byte register = MemoryBus.ReadByte(address);
+        bool bitSet = IsBitSet(register, 3);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_4_vHL()
+    {
+        ushort address = Registers.HL;
+        byte register = MemoryBus.ReadByte(address);
+        bool bitSet = IsBitSet(register, 4);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_5_vHL()
+    {
+        ushort address = Registers.HL;
+        byte register = MemoryBus.ReadByte(address);
+        bool bitSet = IsBitSet(register, 5);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_6_vHL()
+    {
+        ushort address = Registers.HL;
+        byte register = MemoryBus.ReadByte(address);
+        bool bitSet = IsBitSet(register, 6);
+        Registers.ZeroFlag = !bitSet;
+        Registers.SubtractFlag = false;
+        Registers.HalfCarryFlag = true;
+        Cycles += 8;
+    }
+    
+    public static void BIT_1_vHL()
+    {
+        ushort address = Registers.HL;
+        byte register = MemoryBus.ReadByte(address);
         bool bitSet = IsBitSet(register, 1);
         Registers.ZeroFlag = !bitSet;
         Registers.SubtractFlag = false;
@@ -2415,11 +2502,74 @@ public class SM83
         Cycles += 8;
     }
     
-    public static void RES_0_VHL()
+    public static void RES_0_vHL()
     {
         ushort address = Registers.HL;
         byte value = MemoryBus.ReadByte(address);
         byte newValue = ResetBit(value, 0);
+        MemoryBus.WriteByte(address, newValue);
+        Cycles += 8;
+    }
+    
+    public static void RES_1_vHL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        byte newValue = ResetBit(value, 1);
+        MemoryBus.WriteByte(address, newValue);
+        Cycles += 8;
+    }
+    
+    public static void RES_2_vHL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        byte newValue = ResetBit(value, 2);
+        MemoryBus.WriteByte(address, newValue);
+        Cycles += 8;
+    }
+    
+    public static void RES_3_vHL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        byte newValue = ResetBit(value, 3);
+        MemoryBus.WriteByte(address, newValue);
+        Cycles += 8;
+    }
+    
+    public static void RES_4_vHL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        byte newValue = ResetBit(value, 4);
+        MemoryBus.WriteByte(address, newValue);
+        Cycles += 8;
+    }
+    
+    public static void RES_5_vHL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        byte newValue = ResetBit(value, 5);
+        MemoryBus.WriteByte(address, newValue);
+        Cycles += 8;
+    }
+    
+    public static void RES_6_vHL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        byte newValue = ResetBit(value, 6);
+        MemoryBus.WriteByte(address, newValue);
+        Cycles += 8;
+    }
+    
+    public static void RES_7_vHL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        byte newValue = ResetBit(value, 7);
         MemoryBus.WriteByte(address, newValue);
         Cycles += 8;
     }
@@ -2457,6 +2607,62 @@ public class SM83
     public static void SET_0_L()
     {
         Registers.L = SetBit(Registers.L, 0);
+    }
+    
+    public static void SET_0_vHL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        MemoryBus.WriteByte(address, SetBit(value, 0));
+    }
+    
+    public static void SET_1_vHL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        MemoryBus.WriteByte(address, SetBit(value, 1));
+    }
+    
+    public static void SET_2_vHL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        MemoryBus.WriteByte(address, SetBit(value, 2));
+    }
+    
+    public static void SET_3_vHL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        MemoryBus.WriteByte(address, SetBit(value, 3));
+    }
+    
+    public static void SET_4_vHL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        MemoryBus.WriteByte(address, SetBit(value, 4));
+    }
+    
+    public static void SET_5_vHL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        MemoryBus.WriteByte(address, SetBit(value, 5));
+    }
+    
+    public static void SET_6_vHL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        MemoryBus.WriteByte(address, SetBit(value, 6));
+    }
+    
+    public static void SET_7_vHL()
+    {
+        ushort address = Registers.HL;
+        byte value = MemoryBus.ReadByte(address);
+        MemoryBus.WriteByte(address, SetBit(value, 7));
     }
     
     public static void SET_1_A()

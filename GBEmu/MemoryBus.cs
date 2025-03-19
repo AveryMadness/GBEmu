@@ -6,7 +6,7 @@ public class MemoryBus
     private Cartridge cartridge;
     private byte[] bootRom;
     private PPU ppu;
-    private InputController input;
+    public InputController input;
     private APU apu;
     public bool useBootRom = true;
     
