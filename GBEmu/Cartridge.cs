@@ -14,6 +14,28 @@ public class Cartridge
     private const int KB = 1024;
     private const int MB = 1024 * KB;
 
+    public bool HasSaveRam()
+    {
+        return type == CartridgeType.MBC1_RAM_BATTERY || type == CartridgeType.MBC2_BATTERY ||
+               type == CartridgeType.ROM_RAM_BATTERY
+               || type == CartridgeType.MMM01_RAM_BATTERY || type == CartridgeType.MBC3_TIMER_BATTERY ||
+               type == CartridgeType.MBC3_TIMER_RAM_BATTERY
+               || type == CartridgeType.MBC3_RAM_BATTERY || type == CartridgeType.MBC4_RAM_BATTERY ||
+               type == CartridgeType.MBC5_RAM_BATTERY || type == CartridgeType.MBC5_RUMBLE_RAM_BATTERY
+               || type == CartridgeType.HuC1_RAM_BATTERY;
+    }
+
+    public void LoadSaveRam(byte[] saveRam)
+    {
+        Array.Copy(saveRam, ram, saveRam.Length);
+    }
+
+    public void SaveRam()
+    {
+        string title = System.Text.Encoding.ASCII.GetString(rom, 0x0134, 16).TrimEnd('\0');
+        File.WriteAllBytes(AppDomain.CurrentDomain.BaseDirectory + $"/{title}.sav", ram);
+    }
+
     public bool HasRam()    
     {
         byte lowerNibble = (byte)((byte)type & 0x0F);
