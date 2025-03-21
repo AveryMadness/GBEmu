@@ -69,7 +69,7 @@ public class Program
         ofn.nMaxFile = ofn.lpstrFile.Length;
         ofn.lpstrFileTitle = new string(new char[64]);
         ofn.nMaxFileTitle = ofn.lpstrFileTitle.Length;
-        ofn.lpstrTitle = "Open File Dialog...";
+        ofn.lpstrTitle = "Select ROM";
         if (GetOpenFileName(ref ofn))
             return ofn.lpstrFile;
         return string.Empty;
@@ -95,8 +95,18 @@ public class Program
         Console.WriteLine($"Cartridge Type: {cartridgeType}");
         fileStream.Flush();
         fileStream.Close();
+        
+        string title = System.Text.Encoding.ASCII.GetString(File.ReadAllBytes(fileName), 0x0134, 16).TrimEnd('\0');
 
         Cartridge cartridge = new Cartridge(File.ReadAllBytes(fileName), cartridgeType);
+        if (cartridge.HasSaveRam())
+        {
+            if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + $"/{title}.sav"))
+            {
+                byte[] saveRam = File.ReadAllBytes(AppDomain.CurrentDomain.BaseDirectory + $"/{title}.sav");
+                cartridge.LoadSaveRam(saveRam);
+            }
+        }
         Ppu = new PPU();
         InputController inputController = new InputController();
 
@@ -110,48 +120,52 @@ public class Program
         SerialMonitor.StartSerialMonitor();
         
         window = new RenderWindow(new VideoMode(160, 144), "GBEmu");
-        window.Closed += (sender, e) => running = false;
+        window.Closed += (sender, e) =>
+        {
+            running = false;
+            cartridge.SaveRam();
+        };
 
         window.KeyPressed += (sender, e) =>
         {
             if (e.Code == Keyboard.Key.Z)
             {
-                inputController.PressButton(GameBoyButton.ARight);
+                inputController.PressButton(GameBoyButton.A);
             }
             
             if (e.Code == Keyboard.Key.X)
             {
-                inputController.PressButton(GameBoyButton.BLeft);
+                inputController.PressButton(GameBoyButton.B);
             }
 
             if (e.Code == Keyboard.Key.Enter)
             {
-                inputController.PressButton(GameBoyButton.StartDown);
+                inputController.PressButton(GameBoyButton.Start);
             }
             
             if (e.Code == Keyboard.Key.RShift)
             {
-                inputController.PressButton(GameBoyButton.SelectUp);
+                inputController.PressButton(GameBoyButton.Select);
             }
             
             if (e.Code == Keyboard.Key.Up)
             {
-                inputController.PressButton(GameBoyButton.SelectUp);
+                inputController.PressButton(GameBoyButton.Up);
             }
             
             if (e.Code == Keyboard.Key.Down)
             {
-                inputController.PressButton(GameBoyButton.StartDown);
+                inputController.PressButton(GameBoyButton.Down);
             }
             
             if (e.Code == Keyboard.Key.Left)
             {
-                inputController.PressButton(GameBoyButton.BLeft);
+                inputController.PressButton(GameBoyButton.Left);
             }
             
             if (e.Code == Keyboard.Key.Right)
             {
-                inputController.PressButton(GameBoyButton.ARight);
+                inputController.PressButton(GameBoyButton.Right);
             }
         };
         
@@ -159,42 +173,42 @@ public class Program
         {
             if (e.Code == Keyboard.Key.Z)
             {
-                inputController.ReleaseButton(GameBoyButton.ARight);
+                inputController.ReleaseButton(GameBoyButton.A);
             }
             
             if (e.Code == Keyboard.Key.X)
             {
-                inputController.ReleaseButton(GameBoyButton.BLeft);
+                inputController.ReleaseButton(GameBoyButton.B);
             }
 
             if (e.Code == Keyboard.Key.Enter)
             {
-                inputController.ReleaseButton(GameBoyButton.StartDown);
+                inputController.ReleaseButton(GameBoyButton.Start);
             }
             
             if (e.Code == Keyboard.Key.RShift)
             {
-                inputController.ReleaseButton(GameBoyButton.SelectUp);
+                inputController.ReleaseButton(GameBoyButton.Select);
             }
             
             if (e.Code == Keyboard.Key.Up)
             {
-                inputController.ReleaseButton(GameBoyButton.SelectUp);
+                inputController.ReleaseButton(GameBoyButton.Up);
             }
             
             if (e.Code == Keyboard.Key.Down)
             {
-                inputController.ReleaseButton(GameBoyButton.StartDown);
+                inputController.ReleaseButton(GameBoyButton.Down);
             }
             
             if (e.Code == Keyboard.Key.Left)
             {
-                inputController.ReleaseButton(GameBoyButton.BLeft);
+                inputController.ReleaseButton(GameBoyButton.Left);
             }
             
             if (e.Code == Keyboard.Key.Right)
             {
-                inputController.ReleaseButton(GameBoyButton.ARight);
+                inputController.ReleaseButton(GameBoyButton.Right);
             }
         };
 
@@ -320,6 +334,7 @@ public class Program
             }
 
             HandleSerialTransfer();
+            debugText.DisplayedString = $"Input: {Convert.ToString(SM83.MemoryBus.input.Read(), 2).PadLeft(8, '0')}";
         }
 
         double targetFrameTime = 1000.0 / 59.7;
@@ -351,7 +366,6 @@ public class Program
         texture.Update(frameImage);
         window.Clear();
         window.Draw(sprite);
-        window.Draw(debugText);
         window.Display();
     }
 }
