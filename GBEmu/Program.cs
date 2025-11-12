@@ -53,9 +53,11 @@ public class Program
     private static bool running = true;
     
     public const int CPU_CYCLES_PER_FRAME = 70224;
+    public static int[] timerFrequencies = { 1024, 16, 64, 256 };
+
 
     public const bool UseGameboyDoctor = false;
-    public const bool SkipBoot = true;
+    public const bool SkipBoot = false;
     
     [DllImport("comdlg32.dll", SetLastError = true, CharSet = CharSet.Auto)]
     private static extern bool GetOpenFileName(ref OpenFileName ofn);
@@ -80,7 +82,7 @@ public class Program
         MainAsync(args);
     }
     
-    public static async void MainAsync(string[] args)
+    public static void MainAsync(string[] args)
     {
         string fileName = ShowDialog();
         FileStream fileStream = new FileStream(fileName, FileMode.Open);
@@ -107,6 +109,7 @@ public class Program
                 cartridge.LoadSaveRam(saveRam);
             }
         }
+        
         Ppu = new PPU();
         InputController inputController = new InputController();
 
@@ -120,6 +123,7 @@ public class Program
         SerialMonitor.StartSerialMonitor();
         
         window = new RenderWindow(new VideoMode(160, 144), "GBEmu");
+        window.SetView(new View(new FloatRect(0, 0, 160, 144)));
         window.Closed += (sender, e) =>
         {
             running = false;
@@ -215,6 +219,7 @@ public class Program
         frameImage = new Image((uint)160, (uint)144, SFML.Graphics.Color.White);
         texture = new Texture(160, 144);
         sprite = new Sprite(texture);
+        sprite.Scale = new Vector2f(1f, 1f);
         debugFont = new Font(AppDomain.CurrentDomain.BaseDirectory + "/Bytesized-Regular.ttf");
         debugText = new Text("Input: 00000000", debugFont, 10)
         {
@@ -240,7 +245,7 @@ public class Program
         {
             window.DispatchEvents();
             SM83.Cycles = 0;
-            await RunFrame();
+            RunFrame();
         }
 
         window.Close();
@@ -263,7 +268,7 @@ public class Program
 
     private static int divCycles = 0;
     private static int timerCycles = 0;
-    public static async Task RunFrame()
+    public static void RunFrame()
     {
         Stopwatch stopwatch = Stopwatch.StartNew();
         int cyclesThisFrame = 0;
@@ -284,12 +289,13 @@ public class Program
             }
             else
             {
-                await SM83.ExecuteNextInstruction();
+                SM83.ExecuteNextInstruction();
                 SM83.HandleInterrupts();
             }
             
             int elapsedCycles = SM83.Cycles - previousCycles;
             Ppu.Step(elapsedCycles);
+            Apu.Step(elapsedCycles);
             
             divCycles += elapsedCycles;
             bool timerEnabled = (SM83.TAC & 0b00000100) != 0;
@@ -297,7 +303,6 @@ public class Program
             if (timerEnabled)
             {
                 int clockSelect = SM83.TAC & 0b00000011;
-                int[] timerFrequencies = { 1024, 16, 64, 256 };
                 int timerThreshold = timerFrequencies[clockSelect];
 
                 timerCycles += elapsedCycles;
@@ -327,14 +332,6 @@ public class Program
             }
             
             cyclesThisFrame += elapsedCycles;
-
-            if (cyclesThisFrame % 4 == 0)
-            {
-                await Apu.Step();
-            }
-
-            HandleSerialTransfer();
-            debugText.DisplayedString = $"Input: {Convert.ToString(SM83.MemoryBus.input.Read(), 2).PadLeft(8, '0')}";
         }
 
         double targetFrameTime = 1000.0 / 59.7;
@@ -343,6 +340,8 @@ public class Program
         {
             Thread.SpinWait(100);
         }
+        
+        Apu.DebugChannelStatus();
     }
 
     public static void RenderFrame(byte[,] frameBuffer)

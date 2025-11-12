@@ -634,7 +634,7 @@ public class SM83
         Cycles += 20;
     }
 
-    public static async Task ExecuteNextInstruction()
+    public static void ExecuteNextInstruction()
     { 
         if (Program.UseGameboyDoctor)
         {
@@ -651,7 +651,7 @@ public class SM83
        {
            int PCCallLoc = ProgramCounter - 1;
            instructionFunc();
-           Callstack.Add($"(0x{(PCCallLoc):X8}) Executed Instruction 0x{opcode:X2} ({instructionFunc.Method.Name})");
+           //Callstack.Add($"(0x{(PCCallLoc):X8}) Executed Instruction 0x{opcode:X2} ({instructionFunc.Method.Name})");
            
            if (WaitingForMasterInterruptChange > 0)
            {

@@ -10,6 +10,7 @@ public class Cartridge
     private bool bankingMode = false;
     public bool RtcEnabled = false;
     private CartridgeType type;
+    private byte[] saveRamToDump;
 
     private const int KB = 1024;
     private const int MB = 1024 * KB;
@@ -32,8 +33,11 @@ public class Cartridge
 
     public void SaveRam()
     {
-        string title = System.Text.Encoding.ASCII.GetString(rom, 0x0134, 16).TrimEnd('\0');
-        File.WriteAllBytes(AppDomain.CurrentDomain.BaseDirectory + $"/{title}.sav", ram);
+        if (saveRamToDump.Length > 0 && HasSaveRam())
+        {
+            string title = System.Text.Encoding.ASCII.GetString(rom, 0x0134, 16).TrimEnd('\0');
+            File.WriteAllBytes(AppDomain.CurrentDomain.BaseDirectory + $"/{title}.sav", saveRamToDump);
+        }
     }
 
     public bool HasRam()    
@@ -153,6 +157,7 @@ public class Cartridge
 
         rom = romData;
         ram = new byte[ramSize];
+        saveRamToDump = new byte[0];
     }
 
     public byte Read(ushort address)
@@ -282,6 +287,11 @@ public class Cartridge
             if (!ramEnabled) return;
             int ramOffset = (ramBank * 0x2000) + (address - 0xA000);
             ram[ramOffset] = value;
+        }
+
+        if (HasSaveRam())
+        {
+            saveRamToDump = ram;
         }
     }
 }

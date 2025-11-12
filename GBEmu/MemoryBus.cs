@@ -15,6 +15,9 @@ public class MemoryBus
     private byte TIMA;
     private byte TMA;
     private byte TAC;
+    
+    // DMA register
+    private byte DMA;
 
     public MemoryBus(byte[] bootRom, Cartridge cart, PPU ppu, InputController input, APU apu)
     {
@@ -62,6 +65,9 @@ public class MemoryBus
 
                 case >= 0xFE00 and <= 0xFE9F: // OAM (sprite data)
                     return ppu.ReadOAM(address);
+                
+                case >= 0xFEA0 and <= 0xFEFF: // Prohibited range
+                    return 0xFF;
 
                 case >= 0xFF00 and <= 0xFF7F: // I/O Registers
                     return HandleIORead(address);
@@ -128,6 +134,9 @@ public class MemoryBus
                 case >= 0xFE00 and <= 0xFE9F: // OAM
                     ppu.WriteOAM(address, value);
                     break;
+                
+                case >= 0xFEA0 and <= 0xFEFF: // Prohibited range - ignore writes
+                    break;
 
                 case >= 0xFF00 and <= 0xFF7F: // I/O Registers
                     HandleIOWrite(address, value);
@@ -155,16 +164,31 @@ public class MemoryBus
             case 0xFF00: // Joypad input
                 return input.Read();
             
+            case 0xFF01: // Serial transfer data (SB)
+            case 0xFF02: // Serial transfer control (SC)
+                return 0xFF; // Not implemented - return unplugged value
+            
             case 0xFF04: return DIV;
             case 0xFF05: return TIMA;
             case 0xFF06: return TMA;
             case 0xFF07: return TAC;
             
+            case 0xFF0F: // Interrupt Flag (IF)
+                return ram[address];
+            
             case >= 0xFF10 and <= 0xFF3F:
                 return apu.ReadRegister(address);
 
-            case >= 0xFF40 and <= 0xFF4F: // GPU Registers
+            case >= 0xFF40 and <= 0xFF45: // PPU Registers (LCDC, STAT, SCY, SCX, LY, LYC)
+            case 0xFF47: // BGP
+            case 0xFF48: // OBP0
+            case 0xFF49: // OBP1
+            case 0xFF4A: // WY
+            case 0xFF4B: // WX
                 return ppu.ReadRegister(address);
+            
+            case 0xFF46: // DMA
+                return DMA;
 
             default:
                 return ram[address]; // Default to standard RAM behavior
@@ -179,6 +203,11 @@ public class MemoryBus
         {
             case 0xFF00: // Joypad input
                 input.Write(value);
+                break;
+            
+            case 0xFF01: // Serial transfer data (SB)
+            case 0xFF02: // Serial transfer control (SC)
+                // Not implemented - ignore writes
                 break;
 
             case 0xFF04:
@@ -197,12 +226,26 @@ public class MemoryBus
             case 0xFF06: TMA = value; break;
             case 0xFF07: TAC = value; break;
             
+            case 0xFF0F: // Interrupt Flag (IF)
+                ram[address] = value;
+                break;
+            
             case >= 0xFF10 and <= 0xFF3F:
                 apu.WriteRegister(address, value);
                 break;
 
-            case >= 0xFF40 and <= 0xFF4F: // GPU Registers
+            case >= 0xFF40 and <= 0xFF45: // PPU Registers (LCDC, STAT, SCY, SCX, LY, LYC)
+            case 0xFF47: // BGP
+            case 0xFF48: // OBP0
+            case 0xFF49: // OBP1
+            case 0xFF4A: // WY
+            case 0xFF4B: // WX
                 ppu.WriteRegister(address, value);
+                break;
+            
+            case 0xFF46: // DMA Transfer
+                DMA = value;
+                ppu.DoDMATransfer(value);
                 break;
 
             default:
